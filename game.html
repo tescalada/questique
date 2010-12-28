@@ -20,7 +20,11 @@
         </div>
         <div id='hand'>
         {% for tile in tiles %}
+            {% ifequal tile 'blank'%}
+            <div class='hand_tile'>&nbsp;</div>
+            {% else %}
             <div class='hand_tile'>{{tile}}</div>
+            {% endifequal %}
            <!-- <img class="tile" src="/static/images/{{tile}}1.gif" title="{{tile}}" alt="{{tile}}"/> -->
         {% endfor %}
         </div>

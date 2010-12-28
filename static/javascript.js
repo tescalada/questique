@@ -27,7 +27,10 @@ function makeDroppable(){
             $(this).append(tile);
             tile.css('top',0);
             tile.css('left',0);
-            var value = tile.text();
+            var value = tile.html();
+            // blank tile hack
+            if (value == '&nbsp;'){ value = 'blank'; }
+            alert(value);
             var idx = $(this).attr('id');
             currenthand[idx]=value;
             currenthandobjects[$(this).attr('id')]=tile;
@@ -137,6 +140,9 @@ function updateTiles(){
             } else if (pos == 4) {
                 positionClass = "tile_position_ul";
             }
+
+            // blank tile hack
+            if (tile.value == 'blank'){ tile.value = '&nbsp;'; }
 
             $('#'+tile.cell).html('<div class="board_tile '+positionClass+'">'+tile.value+'</div>').addClass('p'+tile.player);
         }
