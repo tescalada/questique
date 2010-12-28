@@ -20,14 +20,12 @@
         </div>
         <div id='hand'>
         {% for tile in tiles %}
-            <div class='hand_tile'>{{tile}}</div>
-           <!-- <img class="tile" src="/static/images/{{tile}}1.gif" title="{{tile}}" alt="{{tile}}"/> -->
+            <img class="tile" src="/static/images/{{tile}}1.gif" title="{{tile}}" alt="{{tile}}"/>
         {% endfor %}
         </div>
-        &nbsp;
         <div id='actions'>
             <input type='button' onclick='submitTiles();' value='submit tiles'/>       
+            <input type='button' onclick='resetTiles();' value='reset tiles'/>       
         </div>
-        <input type='button' onclick='resetTiles();' value='reset tiles'/>       
     </body>
 </html>

@@ -1,11 +1,9 @@
 #!/usr/bin/python
 
-from threading import Thread, enumerate
 from random import randint as rint
 import Image,ImageDraw,ImageFont
 import sys
 import os
-import uuid
 
 PATH = os.path.dirname(__file__)
 sys.path.append(PATH)
@@ -22,15 +20,13 @@ def makeTile(height,width,letter,color):
         img.rotate(color * 90).save(os.path.join(PATH, 'static/images',
         '%s%s.gif' % (letter,color+1)), "GIF")
 
-letters = 'POIUYTREWQLKJHGFDSAMNBVCXZ'
+if __name__ == '__main__':
 
-for letter in letters:
+
+    for letter in 'POIUYTREWQLKJHGFDSAMNBVCXZ':
+        for color in range(4):
+            tile = makeTile(30,30,letter,color)
+
     for color in range(4):
-        tile = makeTile(30,30,letter,color)
-
-for color in range(4):
-    tile = makeTile(30,30,'blank',color)
-
-
-
+        tile = makeTile(30,30,'blank',color)
 
