@@ -1,4 +1,3 @@
-#place tiles while not on turn
 #overwrite tiles
 #tile directions
 rearrange tiles on bottom
@@ -8,3 +7,9 @@ rearrange tiles on bottom
 #make sure first move uses starter space
 #draw for first move # random seats
 #auto start game once in progress
+- move a tile to a cell, move another tile to another cell, 
+  then move the first tile so that it makes a legal word with the first.
+  The server errors with "All tiles must be in the same row or column".
+  This should work, the position of the old cell is probably still in the
+  array being submitted to the server.  Perhaps this array should be updated
+  until that last second, when submitting to the server?
