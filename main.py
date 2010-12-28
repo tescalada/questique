@@ -1,23 +1,28 @@
 #!/usr/bin/env python
-from google.appengine.ext import webapp
-from google.appengine.ext.webapp import util
+from google.appengine.ext import webapp, db
+from google.appengine.ext.webapp import util, template
+from google.appengine.api import users
 import cgi
 from models import Game, Tile
-from google.appengine.ext import db
 import random
 import string
 import os
-from google.appengine.ext.webapp import template
 from django.utils import simplejson
 from time import time
 from datetime import datetime
-from google.appengine.api import users
 
 class MainHandler(webapp.RequestHandler):
     def get(self):
-        self.response.out.write('<a href="new">start</a> or <a href="lobby">join</a> a game of questique!')
+        games = Game.all().filter('status =', 'waiting')
+        template_values = {
+            'games': games,
+        }
+
+        path = os.path.join(os.path.dirname(__file__), 'index.html')
+        self.response.out.write(template.render(path, template_values))
 
 class ApiHandler(webapp.RequestHandler):
+    ''' handles all api requests, dispatches requests '''
     def get(self,id,action):
         self.response.headers['Content-Type'] = 'application/json'
         gameid = cgi.escape(self.request.get('game'))
@@ -33,6 +38,7 @@ class ApiHandler(webapp.RequestHandler):
         self.response.out.write(simplejson.dumps(out))
 
     def do_tiles(self, game):
+        '''gets the list of tiles played and player scores '''
         out = dict()
         out['timestamp'] = int(time())
         currentplayer = game.currentPlayer()
@@ -49,15 +55,14 @@ class ApiHandler(webapp.RequestHandler):
             t = dict(cell='%s-%s' % (tile.col,tile.row),value=tile.value,player=tile.player.user_id(),playerposition=tile.position)
             out['tiles'].append(t)
 
-
         out['scores'] = []
         for player in game.playerlist:
             stars = Tile.all().filter('game =', game).filter('isStar =', True).filter('player =', game.getPlayerByEmail(player)).count()
             out['scores'].append(stars)
         return out
 
-
     def do_placetile(self, game):
+        ''' obsolete way of placing a tile on the board '''
         out = dict()
         cell = cgi.escape(self.request.get('cell'))
         col,row = cell.split('-')
@@ -71,14 +76,15 @@ class ApiHandler(webapp.RequestHandler):
         return out
 
     def fail(self, reason):
+        ''' helper to return failure messages '''
         out = dict()
         if reason:
             out['error'] = reason
         out['status'] = 'fail'
         return out
 
-
     def do_submittiles(self,game):
+        ''' takes several tiles and commits them after doing several checks '''
         starttiles = [(6,17),(17,17),(17,6),(6,6)]
         start = False
         out = dict()
@@ -111,7 +117,6 @@ class ApiHandler(webapp.RequestHandler):
             tile = Tile(col=int(col),row=int(row),value=value,game=game,position=position)
             word.append(tile)
 
-
         for tile in word:
             try:
                 surrounding.remove((tile.col,tile.row))
@@ -132,7 +137,7 @@ class ApiHandler(webapp.RequestHandler):
                     return self.fail("Your tiles cannot touch another player's tiles")
                 else:
                     touching = True
-        
+
         firstmove = False
         if Tile.all().filter('game =', game).filter('player =', users.get_current_user()).count() == 0:
             firstmove = True
@@ -144,8 +149,6 @@ class ApiHandler(webapp.RequestHandler):
         if not touching and not firstmove: 
             return self.fail('Your tiles must touch your other tiles')
 
-
-
         for tile in word:
             tile.save()
             game.currentHand().remove(tile.value)
@@ -155,27 +158,38 @@ class ApiHandler(webapp.RequestHandler):
         out['hand'] = game.myHand()
         return out
 
-
 class NewGameHandler(webapp.RequestHandler):
-    def get(self):
-        game = Game.create()
-        game.save()
-        self.response.out.write('new game created')
-        self.response.out.write('wait for players to join')
+    ''' creates a new game '''
+    def get(self,id=None):
+        if not id:
+            game = Game.create()
+            game.save()
+            return self.redirect("/game/%s/new" % game.key())
+
+        game = Game.get(id)
+        self.response.out.write('''<script> setTimeout("location.reload(true);", 5000); </script>''')
+        self.response.out.write('new game created<br/>')
+        self.response.out.write('wait for players to join<br/>')
+        self.response.out.write('<ul>')
+        for player in game.playerlist:
+            self.response.out.write('<li>%s</li>' % player)
+        self.response.out.write('</ul>')
         self.response.out.write(''' 
         <form method='post'>
-        <input type='hidden' name='id' value='%s'/>
         <input type='hidden' name='action' value='start'/>
         <input type='submit'/>
         </form> ''' % game.key())
+        self.response.out.write('<a href="/game/%s/join">join link for other players' % game.key())
 
-    def post(self):
-        game = Game.get(cgi.escape(self.request.get('id')))
+    def post(self,id):
+        game = Game.get(id)
         game.start()
         game.save()
         self.redirect("/game/%s/" % game.key())
 
+# is this really necessary? can this be put elsewhere
 class JoinHandler(webapp.RequestHandler):
+    ''' joins a game '''
     def get(self,id):
         game = Game.get(id)
         game.join()
@@ -183,6 +197,7 @@ class JoinHandler(webapp.RequestHandler):
         self.redirect("/game/%s/" % game.key())
 
 class GameHandler(webapp.RequestHandler):
+    ''' the game '''
     def get(self,id):
         game = Game.get(id)
         if game.status == 'inprogress':
@@ -206,14 +221,9 @@ class GameHandler(webapp.RequestHandler):
         path = os.path.join(os.path.dirname(__file__), 'game.html')
         self.response.out.write(template.render(path, template_values))
 
-class LobbyHandler(webapp.RequestHandler):
-    def get(self):
-        games = Game.all().filter('status =', 'waiting')
-        for game in games:
-            self.response.out.write("<a href='/game/%s/join'>join game</a><br>" % game.key())
-
-
+# just for testing, remove eventually once old games delete themselves
 class ResetHandler(webapp.RequestHandler):
+    ''' deletes everything '''
     def get(self):
         db.delete(Game.all())
         db.delete(Tile.all())
@@ -221,15 +231,14 @@ class ResetHandler(webapp.RequestHandler):
 
 def main():
     application = webapp.WSGIApplication([('/', MainHandler),
-                                          ('/lobby', LobbyHandler),
                                           ('/reset', ResetHandler),
                                           ('/game/(\w*)/', GameHandler),
                                           ('/game/(\w*)/join', JoinHandler),
+                                          ('/game/(\w*)/new', NewGameHandler),
                                           ('/game/(\w*)/(\w*)', ApiHandler),
                                           ('/new', NewGameHandler)],
                                          debug=True)
     util.run_wsgi_app(application)
-
 
 if __name__ == '__main__':
     main()

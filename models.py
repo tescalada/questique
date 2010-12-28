@@ -86,7 +86,7 @@ class Game(db.Model):
         ''' add the requesting user to the game '''
         if self.status == 'waiting':
             user = users.get_current_user()
-            if len(self.playerlist) < 4:
+            if len(self.playerlist) < 4 and user.email() not in self.playerlist:
                 self.playerlist.append(user.email())
 
     def nextturn(self):
