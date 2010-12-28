@@ -4,6 +4,16 @@ from google.appengine.api import users
 from random import shuffle
 import pickle # is simplejson faster?
 
+tilecounts = {  'A':15, 'B': 4, 'C': 3,
+                'D': 6, 'E':20, 'F': 3,
+                'G': 5, 'H': 3, 'I':14,
+                'J': 1, 'K': 1, 'L': 6,
+                'M': 5, 'N': 9, 'O':11,
+                'P': 4, 'Q': 1, 'R': 9,
+                'S': 7, 'T': 9, 'U': 5,
+                'V': 1, 'W': 2, 'X': 1,
+                'Y': 1, 'Z': 1, ' ': 3}
+
 class GenericListProperty(db.Property):
     ''' Property to hold a list of lists '''
     data_type = db.Blob
@@ -63,7 +73,6 @@ class Game(db.Model):
     @classmethod
     def create(cls):
         ''' class method to create a new game '''
-        tilecounts = dict(A=15,B=4,C=3,D=6,E=20,F=3,G=5,H=3,I=14,J=1,K=1,L=6,M=5,N=9,O=11,P=4,Q=1,R=9,S=7,T=9,U=5,V=1,W=2,X=1,Y=1,Z=1,blank=3)
         tiles = []
         for key in tilecounts.keys():
             for t in range(tilecounts[key]):

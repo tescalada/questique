@@ -28,8 +28,6 @@ function makeDroppable(){
             //tile.css('top',0);
             //tile.css('left',0);
             var value = tile.html();
-            // blank tile hack
-            if (value == '&nbsp;'){ value = 'blank'; }
             tile.css('top','');
             tile.css('left','');
             var idx = $(this).attr('id');
@@ -141,9 +139,6 @@ function updateTiles(){
             } else if (pos == 4) {
                 positionClass = "tile_position_ul";
             }
-
-            // blank tile hack
-            if (tile.value == 'blank'){ tile.value = '&nbsp;'; }
 
             $('#'+tile.cell).html('<div class="board_tile '+positionClass+'">'+tile.value+'</div>').addClass('p'+tile.player);
         }
