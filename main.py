@@ -203,7 +203,7 @@ class GameHandler(webapp.RequestHandler):
         else:
             return self.response.out.write('this game no longer exists')
 
-        path = os.path.join(os.path.dirname(__file__), 'index.html')
+        path = os.path.join(os.path.dirname(__file__), 'game.html')
         self.response.out.write(template.render(path, template_values))
 
 class LobbyHandler(webapp.RequestHandler):
