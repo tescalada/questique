@@ -169,21 +169,12 @@ class NewGameHandler(webapp.RequestHandler):
             game = Game.create()
             game.save()
             return self.redirect("/game/%s/new" % game.key())
-
         game = Game.get(id)
-        self.response.out.write('''<script> setTimeout("location.reload(true);", 5000); </script>''')
-        self.response.out.write('new game created<br/>')
-        self.response.out.write('wait for players to join<br/>')
-        self.response.out.write('<ul>')
-        for player in game.playerlist:
-            self.response.out.write('<li>%s</li>' % player)
-        self.response.out.write('</ul>')
-        self.response.out.write(''' 
-        <form method='post'>
-        <input type='hidden' name='action' value='start'/>
-        <input type='submit'/>
-        </form> ''' % game.key())
-        self.response.out.write('<a href="/game/%s/join">join link for other players' % game.key())
+        template_values = {
+            'players': game.playerlist,
+        }
+        path = os.path.join(os.path.dirname(__file__), 'newgame.html')
+        self.response.out.write(template.render(path, template_values))
 
     def post(self,id):
         game = Game.get(id)
@@ -214,15 +205,13 @@ class GameHandler(webapp.RequestHandler):
                 'players': game.playerlist,
                 }
         elif game.status == 'waiting':
-            return self.response.out.write('''
-            <script>
-            setTimeout("location.reload(true);", 5000);
-            </script>
-            waiting for other players to join, the game will start shortly''')
+            template_values = {
+                'players': game.playerlist,
+            }
         else:
             return self.response.out.write('this game no longer exists')
 
-        path = os.path.join(os.path.dirname(__file__), 'game.html')
+        path = os.path.join(os.path.dirname(__file__), 'game_%s.html' % game.status)
         self.response.out.write(template.render(path, template_values))
 
 # just for testing, remove eventually once old games delete themselves
