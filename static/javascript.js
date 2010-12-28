@@ -25,18 +25,13 @@ function makeDroppable(){
             var tile = ui.draggable;
             tile.detach();
             $(this).append(tile);
-<<<<<<< HEAD
-            tile.css('top',0);
-            tile.css('left',0);
+            //tile.css('top',0);
+            //tile.css('left',0);
             var value = tile.html();
             // blank tile hack
             if (value == '&nbsp;'){ value = 'blank'; }
-            alert(value);
-=======
             tile.css('top','');
             tile.css('left','');
-            var value = tile.text();
->>>>>>> f8a209afe2c9c3827d012b8c6d149f1e68a2443e
             var idx = $(this).attr('id');
             currenthand[idx]=value;
             currenthandobjects[$(this).attr('id')]=tile;
