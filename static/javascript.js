@@ -25,8 +25,8 @@ function makeDroppable(){
             var tile = ui.draggable;
             tile.detach();
             $(this).append(tile);
-            tile.css('top',0);
-            tile.css('left',0);
+            tile.css('top','');
+            tile.css('left','');
             var value = tile.text();
             var idx = $(this).attr('id');
             currenthand[idx]=value;

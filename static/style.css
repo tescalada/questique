@@ -17,6 +17,16 @@ td.filled {background-color:lightgrey}
     text-align: center;
     width: 28px;
 }
+.hand_tile {
+    float: left;
+    border: 2px dashed;
+}
+.hand_tile:hover {
+    position: relative;
+    left: 2px;
+    top: -2px;
+    z-index: 2;
+}
 .tile_position_br {
     background-color: #FF0000;
     -moz-transform:rotate(-90deg);
@@ -31,16 +41,6 @@ td.filled {background-color:lightgrey}
     background-color: #009999;
     -moz-transform:rotate(90deg);
     -webkit-transform:rotate(90deg);
-}
-.hand_tile {
-    float: left;
-    border: 1px dotted gray;
-}
-.hand_tile:hover {
-    position: relative;
-    left: 2px;
-    top: -2px;
-    z-index: 2;
 }
 .ui-state-active {
     background-color: gray;
