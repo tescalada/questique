@@ -3,5 +3,45 @@ body,td {font-size:1.5em}
 td {border-color:black; margin:0;padding:0; border-style:solid;border-width:1px;}
 td.star {border-width:1px; border-color:red; padding:0; background-color:red}
 td.start {border-width:1px; border-color:blue; padding:0; background-color:blue}
+td.your_start {border-width:1px; border-color:green; padding:0 background-color:green}
 td.filled {background-color:lightgrey}
-div.tile { width: 30px; height: 30px; float: left; text-align:center; background-color:lightblue }
+#hand {
+    padding: 4px;
+}
+.hand_tile, 
+.board_tile {
+    background-color: #00CC00;
+    border: 1px solid black;
+    font-size: 26px;
+    height: 26px;
+    text-align: center;
+    width: 28px;
+}
+.tile_position_br {
+    background-color: #FF0000;
+    -moz-transform:rotate(-90deg);
+    -webkit-transform:rotate(-90deg);
+}
+.tile_position_ur {
+    background-color: #FF7400;
+    -moz-transform:rotate(180deg);
+    -webkit-transform:rotate(180deg);
+}
+.tile_position_ul {
+    background-color: #009999;
+    -moz-transform:rotate(90deg);
+    -webkit-transform:rotate(90deg);
+}
+.hand_tile {
+    float: left;
+    border: 1px dotted gray;
+}
+.hand_tile:hover {
+    position: relative;
+    left: 2px;
+    top: -2px;
+    z-index: 2;
+}
+.ui-state-active {
+    background-color: gray;
+}
