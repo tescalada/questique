@@ -1,22 +1,17 @@
-
-
 currenthand = new Object();
 currenthandobjects = new Object();
 
 $(document).ready(function() {
-
     $("#board").html(buildBoard(player));
     updateTiles();
     setInterval ( "updateTiles()", 5000 );
-    $( "img.tile" ).draggable({ revert: "invalid", snap: "td.droppable", snapMode: "inner" });
+    $( ".hand_tile" ).draggable({ revert: "invalid"});
     makeDroppable();
     //$( "#hand" ).sortable({
     //    revert: false,
     //    axis: 'x'
     //});
-    $("img").disableSelection();
-
-
+    $(".board_tile").disableSelection();
 });
 
 
@@ -26,15 +21,21 @@ function makeDroppable(){
         hoverClass: "ui-state-active",
         drop: function( event, ui ) {
             $(this).droppable('disable');
-            $(ui.draggable).draggable('disable');
-            currenthand[$(this).attr('id')]=$(ui.draggable).attr('alt');
-            currenthandobjects[$(this).attr('id')]=$(ui.draggable);
+           // $(ui.draggable).draggable('disable');
+            var tile = ui.draggable;
+            tile.detach();
+            $(this).append(tile);
+            tile.css('top',0);
+            tile.css('left',0);
+            var value = tile.text();
+            var idx = $(this).attr('id');
+            currenthand[idx]=value;
+            currenthandobjects[$(this).attr('id')]=tile;
         }
     });
     $( "td.droppable" ).droppable('enable');
-    $( "td.droppable img" ).parent('td').droppable('disable');
+    $( "td.droppable .board_tile" ).parent('td').droppable('disable');
 }
-
 
 function buildBoard(player){
     var table = $('<table></table>');
@@ -72,12 +73,6 @@ function buildBoard(player){
             table.append(tr);
         }
     } 
-
-
-
-
-
-
     return table;
 }
 
@@ -85,7 +80,7 @@ function buildBoard(player){
 function makeCell(c,r){
     var stars = {2:'',10:'',13:'',21:''}
     var starts = {6:'',17:''}
-    var td = $('<td>&nbsp;</td>');
+    var td = $('<td><span class="container"></span></td>');
     td.attr('id', c+'-'+r);
     td.addClass('droppable');
     if (r in stars){
@@ -98,7 +93,6 @@ function makeCell(c,r){
             td.addClass('start');
         }
     }
-
     return td
 }
 
@@ -120,15 +114,13 @@ function updateTiles(){
             $('#player'+count+'score').html(data.scores[score]);
             count += 1;
         }
-        
+        makeDroppable();
+
         if (data.myturn == '1'){
             $('#actions').show();
-            makeDroppable();
         } else {
             $('#actions').hide();
-            $( "td.droppable" ).droppable('disable');
         }
-
         if (posarray == ''){
             posarray = new Array();
             for (var x = 1; x <= 4 ; x++){
@@ -140,7 +132,16 @@ function updateTiles(){
         for (tile in data.tiles){
             tile = data.tiles[tile];
             pos = posarray[tile.playerposition - 1];
-            $('#'+tile.cell).html('<img src="/static/images/'+tile.value+''+pos+'.gif" title="'+tile.value+'" alt="'+tile.value+'"/>').addClass('p' + tile.player);
+            var positionClass = '';
+            if (pos == 2) {
+                positionClass = "tile_position_br";
+            } else if (pos == 3) {
+                positionClass = "tile_position_ur";
+            } else if (pos == 4) {
+                positionClass = "tile_position_ul";
+            }
+
+            $('#'+tile.cell).html('<div class="board_tile '+positionClass+'">'+tile.value+'</div>').addClass('p'+tile.player);
         }
     });
 }
@@ -160,13 +161,11 @@ function submitTiles(){
             }
             currenthandobjects = new Object();
             $('#hand').html('');
-            mytiles = data.hand
+            mytiles = data.hand;
             for (tile in data.hand){
-                //$('#hand').append('<div class="tile">'+data.hand[tile]+'</div>')
-                tile = data.hand[tile];
-                $('#hand').append('<img class="tile" src="/static/images/'+tile+'1.gif" title="'+tile+'"alt="'+tile+'"/>');
+                $('#hand').append('<div class="hand_tile">'+data.hand[tile]+'</div>');
             }
-            $( "img.tile" ).draggable({ revert: "invalid", snap: "td.droppable", snapMode: "inner" });
+            $( ".hand_tile" ).draggable({ revert: "invalid"});
             $('#actions').hide();
         } else {
             alert(data.error);
@@ -180,17 +179,19 @@ function resetTiles(){
     
     currenthand = new Object();
     currenthandobjects = new Object();
-    $("img.tile").css('left','0px');
-    $("img.tile").css('top','0px');
-    $("img.tile").draggable('enable');
+    //$("img.tile").css('left','0px');
+    //$("img.tile").css('top','0px');
+    $(".hand_tile").draggable('enable');
+    $(".hand_tile").each(function(idx,tile) {
+        $(tile).detach();
+        $("#hand").append(tile);
+    });
     makeDroppable();
     //$(".tile").draggable('destroy');
     //$( "#hand" ).sortable({
     //    revert: false,
     //    axis: 'x'
     //});
-    $("img").disableSelection();
+    $(".board_tile").disableSelection();
 
 }
-
-
