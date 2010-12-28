@@ -1,0 +1,10 @@
+#place tiles while not on turn
+#overwrite tiles
+#tile directions
+rearrange tiles on bottom
+#recalled board tiles need to be redroppable
+#check if tile is touching other tiles 
+#check to see if word is all in a row/column
+#make sure first move uses starter space
+#draw for first move # random seats
+#auto start game once in progress
