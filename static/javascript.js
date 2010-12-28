@@ -130,10 +130,7 @@ function updateTiles(){
         }
 
         if (posarray == ''){
-            posarray = new Array();
-            for (var x = 1; x <= 4 ; x++){
-                posarray.push(x);
-            }
+            posarray = [1,2,3,4];
             posarray = posarray.splice(5 - position).concat(posarray);
         }
 
