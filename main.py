@@ -93,6 +93,10 @@ class ApiHandler(webapp.RequestHandler):
         cols = []
         surrounding = []
         position = int(game.myPosition()[-1])
+
+        if game.currentPlayer() != users.get_current_user():
+            return self.fail('It is not your turn')
+
         for arg in self.request.arguments():
             cell = arg
             col,row = cell.split('-')
