@@ -1,26 +1,20 @@
-<html>
-    <head>
-        <link href="/static/style.css" rel="stylesheet" type="text/css">
-        <script language="javascript" src="/static/jquery.js"></script>
-        <script language="javascript" src="/static/jquery-ui.js"></script>
-        <script language="javascript">
+{% extends "base.html" %}
+{% block js-preload %}
+    <script language="javascript">
             setTimeout("location.reload(true);", 5000); 
-        </script>
-    </head>
-    <body>
-
-        new game created<br/>
-        wait for players to join<br/>
-        <ul>
-        {% for player in players %}
-            <li>{{player}}</li>
-        {% endfor %}
-        </ul>
-        <form method='post'>
+    </script>
+{% endblock %}
+{% block content %}
+    new game created<br/>
+    wait for players to join<br/>
+    <ul>
+    {% for player in players %}
+        <li>{{player}}</li>
+    {% endfor %}
+    </ul>
+    <form method='post'>
         <input type='hidden' name='action' value='start'/>
         <input type='submit'/>
-        </form>
-        <a href="join">join link for other players</a>
-
-    </body>
-</html>
+    </form>
+    <a href="join">join link for other players</a>
+{% endblock %}

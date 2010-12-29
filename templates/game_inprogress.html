@@ -1,32 +1,30 @@
-<html>
-    <head>
-        <link href="/static/style.css" rel="stylesheet" type="text/css">
-        <script language="javascript" src="/static/jquery.js"></script>
-        <script language="javascript" src="/static/jquery-ui.js"></script>
-        <script language="javascript">
+{% extends "base.html" %}
+{% block js-preload %}
+    <script language="javascript">
         var player = '{{player}}';
         var playercount = '{{playercount}}';
         var position = '{{position}}';
-        </script>
-        <script language="javascript" src="/static/javascript.js"></script>
-    </head>
-    <body>
-        <div id='board'></div>
-        <div id='scores' style='float:right; background-color:lightgrey;'>
-            <div id='currentplayer'>Current Player: <span id='currentplayername'> </span></div>
-            {% for player in players %}
-            <div id='player{{forloop.counter}}'>Player{{forloop.counter}}: {{player}} (<span id='player{{forloop.counter}}score'>0</span> stars)</div>
-            {% endfor %}
+    </script>
+    <script language="javascript" src="/static/javascript.js"></script>
+{% endblock %}
+{% block content %}
+    <div id='board'></div>
+    <div id='scores' style='float:right; background-color:lightgrey;'>
+        <div id='currentplayer'>Current Player: <span id='currentplayername'> </span></div>
+        {% for player in players %}
+        <div id='player{{forloop.counter}}'>
+            Player{{forloop.counter}}: {{player}} (<span id='player{{forloop.counter}}score'>0</span> stars)
         </div>
-        <div id='hand'>
-        {% for tile in tiles %}
-            <div class='hand_tile'>{{tile}}</div>
         {% endfor %}
-        </div>
-        &nbsp;
-        <div id='actions'>
-            <input type='button' onclick='submitTiles();' value='submit tiles'/>       
-            <input type='button' onclick='dumpTiles();' value='dump tiles'/>       
-        </div>
-    </body>
-</html>
+    </div>
+    <div id='hand'>
+    {% for tile in tiles %}
+        <div class='hand_tile'>{{tile}}</div>
+    {% endfor %}
+    </div>
+    &nbsp;
+    <div id='actions'>
+        <input type='button' onclick='submitTiles();' value='submit tiles'/>       
+        <input type='button' onclick='dumpTiles();' value='dump tiles'/>       
+    </div>
+{% endblock %}
