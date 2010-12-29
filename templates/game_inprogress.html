@@ -19,16 +19,13 @@
     </div>
     <div id='hand'>
     {% for tile in tiles %}
-        {% ifequal tile 'blank'%}
-        <div class='hand_tile'>&nbsp;</div>
-        {% else %}
         <div class='hand_tile'>{{tile}}</div>
-        {% endifequal %}
     {% endfor %}
     </div>
     &nbsp;
     <div id='actions'>
         <input type='button' onclick='submitTiles();' value='submit tiles'/>       
+        <input type='button' onclick='dumpTiles();' value='dump tiles'/>       
     </div>
     <input type='button' onclick='resetTiles();' value='reset tiles'/>       
 {% endblock %}

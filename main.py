@@ -32,7 +32,7 @@ class ApiHandler(webapp.RequestHandler):
         gameid = cgi.escape(self.request.get('game'))
         game = Game.get(id)
         out = dict()
-        actions = ['placetile','submittiles','tiles']
+        actions = ['placetile','submittiles','tiles','dumptiles']
         if action in actions:
             f = getattr(self, 'do_' + action)
             out = f(game)
@@ -162,6 +162,18 @@ class ApiHandler(webapp.RequestHandler):
         for tile in word:
             tile.save()
             game.currentHand().remove(tile.value)
+        game.nextturn()
+        game.save()
+        out['status'] = 'success'
+        out['hand'] = game.myHand()
+        return out
+
+    def do_dumptiles(self,game):
+        ''' swaps your hand for a new one '''
+        out = dict()
+        if game.currentPlayer() != users.get_current_user():
+            return self.fail('It is not your turn')
+        game.dumpMyHand()
         game.nextturn()
         game.save()
         out['status'] = 'success'

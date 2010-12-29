@@ -58,6 +58,15 @@ class Game(db.Model):
         currentplayer = (self.turns % self.players)
         return self.playerhands[currentplayer]
 
+    def dumpMyHand(self):
+        ''' swaps out hand of the requesting user '''
+        for player in enumerate(self.playerlist):
+            if player[1] == users.get_current_user().email():
+                for tile in self.playerhands[player[0]]:
+                    self.tiles.append(tile)
+                self.playerhands[player[0]] = []
+                shuffle(self.tiles)
+
     def myHand(self):
         ''' tiles in the hand of the requesting user '''
         for player in enumerate(self.playerlist):
