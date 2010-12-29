@@ -11,6 +11,10 @@ from django.utils import simplejson
 from time import time
 from datetime import datetime
 
+def render_template(response, templateName, values):
+    path = os.path.join(os.path.dirname(__file__), templateName)
+    return response.out.write(template.render(path, values))
+
 class MainHandler(webapp.RequestHandler):
     def get(self):
         games = Game.all().filter('status =', 'waiting')
@@ -18,8 +22,8 @@ class MainHandler(webapp.RequestHandler):
             'games': games,
         }
 
-        path = os.path.join(os.path.dirname(__file__), 'index.html')
-        self.response.out.write(template.render(path, template_values))
+        render_template(self.response, 
+            'templates/index.html', template_values)
 
 class ApiHandler(webapp.RequestHandler):
     ''' handles all api requests, dispatches requests '''
@@ -52,7 +56,9 @@ class ApiHandler(webapp.RequestHandler):
             tiles.filter('timestamp >=', since)
         out['tiles'] = []
         for tile in tiles:
-            t = dict(cell='%s-%s' % (tile.col,tile.row),value=tile.value,player=tile.player.user_id(),playerposition=tile.position)
+            t = dict(cell='%s-%s' % (tile.col,tile.row),
+                value=tile.value,player=tile.player.user_id(),
+                playerposition=tile.position)
             out['tiles'].append(t)
 
         out['scores'] = []
@@ -185,8 +191,8 @@ class NewGameHandler(webapp.RequestHandler):
         template_values = {
             'players': game.playerlist,
         }
-        path = os.path.join(os.path.dirname(__file__), 'newgame.html')
-        self.response.out.write(template.render(path, template_values))
+        render_template(self.response,
+            'templates/newgame.html', template_values)
 
     def post(self,id):
         game = Game.get(id)
@@ -223,8 +229,8 @@ class GameHandler(webapp.RequestHandler):
         else:
             return self.response.out.write('this game no longer exists')
 
-        path = os.path.join(os.path.dirname(__file__), 'game_%s.html' % game.status)
-        self.response.out.write(template.render(path, template_values))
+        render_template(self.response,
+            'templates/game_%s.html' % game.status, template_values)
 
 # just for testing, remove eventually once old games delete themselves
 class ResetHandler(webapp.RequestHandler):
@@ -238,9 +244,9 @@ def main():
     application = webapp.WSGIApplication([('/', MainHandler),
                                           ('/reset', ResetHandler),
                                           ('/game/(\w*)/', GameHandler),
-                                          ('/game/(\w*)/join', JoinHandler),
-                                          ('/game/(\w*)/new', NewGameHandler),
-                                          ('/game/(\w*)/(\w*)', ApiHandler),
+                                          ('/game/([\w-]*)/join', JoinHandler),
+                                          ('/game/([\w-]*)/new', NewGameHandler),
+                                          ('/game/([\w-]*)/(\w*)', ApiHandler),
                                           ('/new', NewGameHandler)],
                                          debug=True)
     util.run_wsgi_app(application)
