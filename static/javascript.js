@@ -174,6 +174,37 @@ function submitTiles(){
     });
 }
 
+
+function dumpTiles(){
+    if (confirm('Are you sure you want to dump your hand and draw a new hand?')){
+        $.getJSON('dumptiles', currenthand, function(data) {
+            if (data.status == 'success'){
+                updateTiles();
+                currenthand = new Object();
+                for (obj in currenthandobjects){
+                    currenthandobjects[obj].remove();
+                }
+                currenthandobjects = new Object();
+                $('#hand').html('');
+                mytiles = data.hand;
+                for (tile in data.hand){
+                    $('#hand').append('<div class="hand_tile">'+data.hand[tile]+'</div>');
+                }
+                $( ".hand_tile" ).draggable({ revert: "invalid"});
+                $('#actions').hide();
+            } else {
+                alert(data.error);
+                resetTiles();
+            }
+        });
+    }
+}
+
+
+
+
+
+
 function resetTiles(){
     
     currenthand = new Object();
