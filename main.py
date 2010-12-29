@@ -22,8 +22,13 @@ class MainHandler(webapp.RequestHandler):
             'games': games,
         }
 
+<<<<<<< HEAD
         render_template(self.response, 
             'templates/index.html', template_values)
+=======
+        path = os.path.join(os.path.dirname(__file__), 'templates/index.html')
+        self.response.out.write(template.render(path, template_values))
+>>>>>>> c3dab56a4335c0ef67ff190dd04a13eb650e4a40
 
 class ApiHandler(webapp.RequestHandler):
     ''' handles all api requests, dispatches requests '''
@@ -179,8 +184,13 @@ class NewGameHandler(webapp.RequestHandler):
         template_values = {
             'players': game.playerlist,
         }
+<<<<<<< HEAD
         render_template(self.response,
             'templates/newgame.html', template_values)
+=======
+        path = os.path.join(os.path.dirname(__file__), 'templates/newgame.html')
+        self.response.out.write(template.render(path, template_values))
+>>>>>>> c3dab56a4335c0ef67ff190dd04a13eb650e4a40
 
     def post(self,id):
         game = Game.get(id)
@@ -216,9 +226,15 @@ class GameHandler(webapp.RequestHandler):
             }
         else:
             return self.response.out.write('this game no longer exists')
+<<<<<<< HEAD
         
         render_template(self.response,
             'templates/game_%s.html' % game.status, template_values)
+=======
+
+        path = os.path.join(os.path.dirname(__file__), 'tempaltes/game_%s.html' % game.status)
+        self.response.out.write(template.render(path, template_values))
+>>>>>>> c3dab56a4335c0ef67ff190dd04a13eb650e4a40
 
 # just for testing, remove eventually once old games delete themselves
 class ResetHandler(webapp.RequestHandler):
