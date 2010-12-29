@@ -1,6 +1,3 @@
-currenthand = new Object();
-currenthandobjects = new Object();
-
 $(document).ready(function() {
     $("#board").html(buildBoard(player));
     updateTiles();
@@ -31,8 +28,6 @@ function makeDroppable(){
             tile.css('top','');
             tile.css('left','');
             var idx = $(this).attr('id');
-            currenthand[idx]=value;
-            currenthandobjects[$(this).attr('id')]=tile;
         }
     });
     $( "td.droppable" ).droppable('enable');
@@ -146,21 +141,16 @@ function updateTiles(){
 }
 
 
-var resp = 0;
-
-mytiles = 0;
-
 function submitTiles(){
-    $.getJSON('submittiles', currenthand, function(data) {
+    placedtiles = new Object();
+    $('td div.hand_tile').each(function(){ 
+        placedtiles[$(this).parent('td').attr('id')] = $(this).html(); 
+    });
+
+    $.getJSON('submittiles', placedtiles, function(data) {
         if (data.status == 'success'){
             updateTiles();
-            currenthand = new Object();
-            for (obj in currenthandobjects){
-                currenthandobjects[obj].remove();
-            }
-            currenthandobjects = new Object();
             $('#hand').html('');
-            mytiles = data.hand;
             for (tile in data.hand){
                 $('#hand').append('<div class="hand_tile">'+data.hand[tile]+'</div>');
             }
@@ -168,7 +158,6 @@ function submitTiles(){
             $('#actions').hide();
         } else {
             alert(data.error);
-
             resetTiles();
         }
     });
@@ -177,16 +166,10 @@ function submitTiles(){
 
 function dumpTiles(){
     if (confirm('Are you sure you want to dump your hand and draw a new hand?')){
-        $.getJSON('dumptiles', currenthand, function(data) {
+        $.getJSON('dumptiles', function(data) {
             if (data.status == 'success'){
                 updateTiles();
-                currenthand = new Object();
-                for (obj in currenthandobjects){
-                    currenthandobjects[obj].remove();
-                }
-                currenthandobjects = new Object();
                 $('#hand').html('');
-                mytiles = data.hand;
                 for (tile in data.hand){
                     $('#hand').append('<div class="hand_tile">'+data.hand[tile]+'</div>');
                 }
@@ -207,8 +190,6 @@ function dumpTiles(){
 
 function resetTiles(){
     
-    currenthand = new Object();
-    currenthandobjects = new Object();
     //$("img.tile").css('left','0px');
     //$("img.tile").css('top','0px');
     $(".hand_tile").draggable('enable');
