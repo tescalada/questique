@@ -7,6 +7,9 @@ td.your_start {border-width:1px; border-color:green; padding:0 background-color:
 td.filled {background-color:lightgrey}
 #hand {
     padding: 4px;
+    background-color: lightgrey;
+    min-height:40px;
+    width: 400px;
 }
 .hand_tile, 
 .board_tile {

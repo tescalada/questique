@@ -27,9 +27,21 @@ function makeDroppable(){
             var value = tile.html();
             tile.css('top','');
             tile.css('left','');
-            var idx = $(this).attr('id');
+            //var idx = $(this).attr('id');
         }
     });
+    $( "#hand" ).droppable({
+        activeClass: "ui-state-hover",
+        hoverClass: "ui-state-active",
+        drop: function( event, ui ) {
+            var tile = ui.draggable;
+            tile.detach();
+            $(this).append(tile);
+            tile.css('top','');
+            tile.css('left','');
+        }
+    });
+
     $( "td.droppable" ).droppable('enable');
     $( "td.droppable .board_tile" ).parent('td').droppable('disable');
 }
@@ -190,8 +202,6 @@ function dumpTiles(){
 
 function resetTiles(){
     
-    //$("img.tile").css('left','0px');
-    //$("img.tile").css('top','0px');
     $(".hand_tile").draggable('enable');
     $(".hand_tile").each(function(idx,tile) {
         $(tile).detach();
