@@ -216,7 +216,7 @@ class GameHandler(webapp.RequestHandler):
             }
         else:
             return self.response.out.write('this game no longer exists')
-        
+
         render_template(self.response,
             'templates/game_%s.html' % game.status, template_values)
 
