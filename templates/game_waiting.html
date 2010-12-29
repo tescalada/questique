@@ -1,19 +1,15 @@
-<html>
-    <head>
-        <link href="/static/style.css" rel="stylesheet" type="text/css">
-        <script language="javascript" src="/static/jquery.js"></script>
-        <script language="javascript" src="/static/jquery-ui.js"></script>
-        <script language="javascript">
-            setTimeout("location.reload(true);", 5000); 
-        </script>
-    </head>
-    <body>
-        waiting for other players to join, the game will start shortly<br/><br/>
-        Current Players:
-        <ul>
-        {% for player in players %}
-            <li>{{player}}</li>
-        {% endfor %}
-        </ul>
-    </body>
-</html>
+{% extends "base.html" %}
+{% block js-preload %}
+    <script language="javascript">
+        setTimeout("location.reload(true);", 5000); 
+    </script>
+{% endblock %}
+{% block content %}
+    waiting for other players to join, the game will start shortly<br/><br/>
+    Current Players:
+    <ul>
+    {% for player in players %}
+        <li>{{player}}</li>
+    {% endfor %}
+    </ul>
+{% endblock %}
