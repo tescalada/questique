@@ -18,7 +18,7 @@ class MainHandler(webapp.RequestHandler):
             'games': games,
         }
 
-        path = os.path.join(os.path.dirname(__file__), 'index.html')
+        path = os.path.join(os.path.dirname(__file__), 'templates/index.html')
         self.response.out.write(template.render(path, template_values))
 
 class ApiHandler(webapp.RequestHandler):
@@ -173,7 +173,7 @@ class NewGameHandler(webapp.RequestHandler):
         template_values = {
             'players': game.playerlist,
         }
-        path = os.path.join(os.path.dirname(__file__), 'newgame.html')
+        path = os.path.join(os.path.dirname(__file__), 'templates/newgame.html')
         self.response.out.write(template.render(path, template_values))
 
     def post(self,id):
@@ -211,7 +211,7 @@ class GameHandler(webapp.RequestHandler):
         else:
             return self.response.out.write('this game no longer exists')
 
-        path = os.path.join(os.path.dirname(__file__), 'game_%s.html' % game.status)
+        path = os.path.join(os.path.dirname(__file__), 'tempaltes/game_%s.html' % game.status)
         self.response.out.write(template.render(path, template_values))
 
 # just for testing, remove eventually once old games delete themselves
