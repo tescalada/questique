@@ -5,7 +5,7 @@
     Games:
     <ul>
     {% for game in games %}
-        <li><a href='/game/{{game.key}}/join'>join game</a> ({{game.playerlist|length}}/4 players)</li>
+        <li><a href='/game/{{game.key}}/'>join game</a> ({{game.playerlist|length}}/4 players)</li>
     {% endfor %}
     </ul>
 {% endblock %}

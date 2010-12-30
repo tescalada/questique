@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from google.appengine.ext import webapp, db
-from google.appengine.ext.webapp import util, template
+from google.appengine.ext.webapp import template
+from google.appengine.ext.webapp.util import run_wsgi_app, login_required
 
 from google.appengine.api import users, channel
 import cgi
@@ -16,6 +17,11 @@ def render_template(response, templateName, values):
     path = os.path.join(os.path.dirname(__file__), templateName)
     return response.out.write(template.render(path, values))
 
+def sendMessage(game,message):
+    jsonmessage = simplejson.dumps(message)
+    for player in game.playerlist:
+        channel.send_message(player + str(game.key()), jsonmessage)
+
 class MainHandler(webapp.RequestHandler):
     def get(self):
         games = Game.all().filter('status =', 'waiting')
@@ -26,20 +32,15 @@ class MainHandler(webapp.RequestHandler):
         render_template(self.response, 
             'templates/index.html', template_values)
 
-
-def sendMessage(game,message):
-    jsonmessage = simplejson.dumps(message)
-    for player in game.playerlist:
-        channel.send_message(player + str(game.key()), jsonmessage)
-
 class ApiHandler(webapp.RequestHandler):
     ''' handles all api requests, dispatches requests '''
+    @login_required
     def get(self,id,action):
         self.response.headers['Content-Type'] = 'application/json'
         gameid = cgi.escape(self.request.get('game'))
         game = Game.get(id)
         out = dict()
-        actions = ['placetile','submittiles','tiles','dumptiles']
+        actions = ['placetile','submittiles','tiles','dumptiles','chat','start','join']
         if action in actions:
             f = getattr(self, 'do_' + action)
             out = f(game)
@@ -49,21 +50,6 @@ class ApiHandler(webapp.RequestHandler):
         if action in ['submittiles','dumptiles']:
             sendMessage(game, dict(updatetiles=1))
         self.response.out.write(simplejson.dumps(out))
-
-    def post(self,id,action):
-        self.response.headers['Content-Type'] = 'application/json'
-        gameid = cgi.escape(self.request.get('game'))
-        game = Game.get(id)
-        out = dict()
-        actions = ['placetile','submittiles','tiles','dumptiles','chat']
-        if action in actions:
-            f = getattr(self, 'do_' + action)
-            out = f(game)
-        else:
-            out = self.fail('invalid action')
-        game.save()
-        self.response.out.write(simplejson.dumps(out))
-
 
     def do_chat(self,game):
         '''testing chat'''
@@ -198,7 +184,25 @@ class ApiHandler(webapp.RequestHandler):
         out['hand'] = game.myHand()
         return out
 
+    def do_start(self,game):
+        ''' starts the game '''
+        out = dict()
+        if users.get_current_user().email != game.playerlist[0]:
+            return self.fail('Only the creator may start the game')
+        game.start()
+        game.save()
+        out['status'] = 'success'
+        return out
 
+    def do_join(self,game):
+        ''' starts the game '''
+        out = dict()
+        if users.get_current_user().email in game.playerlist:
+            return self.fail('You are already in this game')
+        game.join()
+        game.save()
+        out['status'] = 'success'
+        return out
 
     def do_dumptiles(self,game):
         ''' swaps your hand for a new one '''
@@ -214,35 +218,15 @@ class ApiHandler(webapp.RequestHandler):
 
 class NewGameHandler(webapp.RequestHandler):
     ''' creates a new game '''
-    def get(self,id=None):
-        if not id:
-            game = Game.create()
-            game.save()
-            return self.redirect("/game/%s/new" % game.key())
-        game = Game.get(id)
-        template_values = {
-            'players': game.playerlist,
-        }
-        render_template(self.response,
-            'templates/newgame.html', template_values)
-
-    def post(self,id):
-        game = Game.get(id)
-        game.start()
+    @login_required
+    def get(self):
+        game = Game.create()
         game.save()
-        self.redirect("/game/%s/" % game.key())
-
-# is this really necessary? can this be put elsewhere
-class JoinHandler(webapp.RequestHandler):
-    ''' joins a game '''
-    def get(self,id):
-        game = Game.get(id)
-        game.join()
-        game.save()
-        self.redirect("/game/%s/" % game.key())
+        return self.redirect("/game/%s/new" % game.key())
 
 class GameHandler(webapp.RequestHandler):
     ''' the game '''
+    @login_required
     def get(self,id):
         game = Game.get(id)
         if game.status == 'inprogress':
@@ -259,6 +243,13 @@ class GameHandler(webapp.RequestHandler):
             template_values = {
                 'players': game.playerlist,
             }
+
+            if users.get_current_user().email() not in game.playerlist:
+                template_values['joinlink'] = 1
+
+            if users.get_current_user().email() == game.playerlist[0]:
+                template_values['startlink'] = 1
+
         else:
             return self.response.out.write('this game no longer exists')
 
@@ -277,12 +268,10 @@ def main():
     application = webapp.WSGIApplication([('/', MainHandler),
                                           ('/reset', ResetHandler),
                                           ('/game/(\w*)/', GameHandler),
-                                          ('/game/([\w-]*)/join', JoinHandler),
-                                          ('/game/([\w-]*)/new', NewGameHandler),
                                           ('/game/([\w-]*)/(\w*)', ApiHandler),
                                           ('/new', NewGameHandler)],
                                          debug=True)
-    util.run_wsgi_app(application)
+    run_wsgi_app(application)
 
 if __name__ == '__main__':
     main()

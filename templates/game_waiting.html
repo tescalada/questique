@@ -12,4 +12,13 @@
         <li>{{player}}</li>
     {% endfor %}
     </ul>
+
+    {% if joinlink %}
+        <input type='button' onclick='joinGame();' value='join'>
+    {% endif %}
+
+    {% if startlink %}
+        <input type='button' onclick='startGame();' value='start'>
+    {% endif %}
+
 {% endblock %}
