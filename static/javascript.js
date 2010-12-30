@@ -1,7 +1,7 @@
 $(document).ready(function() {
     $("#board").html(buildBoard(player));
     updateTiles();
-    setInterval ( "updateTiles()", 5000 );
+    setInterval ( "updateTiles()", 60000 );
     $( ".hand_tile" ).draggable({ revert: "invalid"});
     makeDroppable();
     //$( "#hand" ).sortable({
@@ -10,6 +10,28 @@ $(document).ready(function() {
     //});
     $(".board_tile").disableSelection();
 });
+
+function chat(){
+    $.post("chat", { message: $('#chattext').val() } );
+    $('#chattext').val('');
+    return false;
+}
+
+function openChannel(token){
+    channel = new goog.appengine.Channel(token);
+    socket = channel.open();
+    socket.onopen = function(){  };
+    socket.onmessage = function(message){ 
+    var data = JSON.parse(message.data);
+        if (data.chat){
+            $('#chatwindow').append(data.chat + '\n'); 
+        } else {
+            updateTiles(); 
+        } 
+    };
+    socket.onerror = function(){ alert('onerror'); };
+    socket.onclose = function(){ alert('onclose'); };
+}
 
 
 function makeDroppable(){

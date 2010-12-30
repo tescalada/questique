@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 from google.appengine.ext import webapp, db
 from google.appengine.ext.webapp import util, template
-from google.appengine.api import users
+
+from google.appengine.api import users, channel
 import cgi
 from models import Game, Tile
 import random
@@ -25,6 +26,12 @@ class MainHandler(webapp.RequestHandler):
         render_template(self.response, 
             'templates/index.html', template_values)
 
+
+def sendMessage(game,message):
+    jsonmessage = simplejson.dumps(message)
+    for player in game.playerlist:
+        channel.send_message(player + str(game.key()), jsonmessage)
+
 class ApiHandler(webapp.RequestHandler):
     ''' handles all api requests, dispatches requests '''
     def get(self,id,action):
@@ -39,7 +46,30 @@ class ApiHandler(webapp.RequestHandler):
         else:
             out = self.fail('invalid action')
         game.save()
+        if action in ['submittiles','dumptiles']:
+            sendMessage(game, dict(updatetiles=1))
         self.response.out.write(simplejson.dumps(out))
+
+    def post(self,id,action):
+        self.response.headers['Content-Type'] = 'application/json'
+        gameid = cgi.escape(self.request.get('game'))
+        game = Game.get(id)
+        out = dict()
+        actions = ['placetile','submittiles','tiles','dumptiles','chat']
+        if action in actions:
+            f = getattr(self, 'do_' + action)
+            out = f(game)
+        else:
+            out = self.fail('invalid action')
+        game.save()
+        self.response.out.write(simplejson.dumps(out))
+
+
+    def do_chat(self,game):
+        '''testing chat'''
+        name = users.get_current_user().nickname()
+        message = cgi.escape(self.request.get('message'))
+        sendMessage(game, dict(chat= '%s: %s' % (name, message)))
 
     def do_tiles(self, game):
         '''gets the list of tiles played and player scores '''
@@ -168,6 +198,8 @@ class ApiHandler(webapp.RequestHandler):
         out['hand'] = game.myHand()
         return out
 
+
+
     def do_dumptiles(self,game):
         ''' swaps your hand for a new one '''
         out = dict()
@@ -221,6 +253,7 @@ class GameHandler(webapp.RequestHandler):
                 'playercount': game.players,
                 'position': game.myPosition()[-1],
                 'players': game.playerlist,
+                'token': channel.create_channel(users.get_current_user().email() + str(game.key())),
                 }
         elif game.status == 'waiting':
             template_values = {

@@ -1,14 +1,18 @@
 {% extends "base.html" %}
 {% block js-preload %}
+    <script src='/_ah/channel/jsapi'></script>
     <script language="javascript">
         var player = '{{player}}';
         var playercount = '{{playercount}}';
         var position = '{{position}}';
     </script>
     <script language="javascript" src="/static/javascript.js"></script>
+    <script language="javascript">
+        openChannel('{{token}}');
+    </script>
 {% endblock %}
 {% block content %}
-    <div id='board'></div>
+    <div id='board' style='float:left;'></div>
     <div id='scores' style='float:right; background-color:lightgrey;'>
         <div id='currentplayer'>Current Player: <span id='currentplayername'> </span></div>
         {% for player in players %}
@@ -17,15 +21,30 @@
         </div>
         {% endfor %}
     </div>
-    <div id='hand'>
-    {% for tile in tiles %}
-        <div class='hand_tile'>{{tile}}</div>
-    {% endfor %}
+
+<div id='chat' style='float:right;background-color:lightgray;'>
+Chat:<br/>
+<textarea id='chatwindow' style='width:500px;height:100px;'></textarea>
+<form onsubmit='return chat();'>
+<input type='text' id='chattext' style='width:455px;'/>
+<input type='submit' value='send' style='width:40px;'/>
+</form>
+</div>
+
+    <br style='clear:both'/>
+    <div style='width:600px;'>
+        <div id='hand'>
+        {% for tile in tiles %}
+            <div class='hand_tile'>{{tile}}</div>
+        {% endfor %}
+        </div>
+        &nbsp;
+        <div style='float:right;'>
+            <span id='actions'>
+                <input type='button' onclick='submitTiles();' value='submit tiles'/>       
+                <input type='button' onclick='dumpTiles();' value='dump tiles'/>       
+            </span>
+            <input type='button' onclick='resetTiles();' value='reset tiles'/>       
+        </div>
     </div>
-    &nbsp;
-    <div id='actions'>
-        <input type='button' onclick='submitTiles();' value='submit tiles'/>       
-        <input type='button' onclick='dumpTiles();' value='dump tiles'/>       
-    </div>
-    <input type='button' onclick='resetTiles();' value='reset tiles'/>       
 {% endblock %}

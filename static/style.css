@@ -9,7 +9,8 @@ td.filled {background-color:lightgrey}
     padding: 4px;
     background-color: lightgrey;
     min-height:40px;
-    width: 400px;
+    width: 300px;
+    float:left;
 }
 .hand_tile, 
 .board_tile {
