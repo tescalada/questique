@@ -187,7 +187,7 @@ class ApiHandler(webapp.RequestHandler):
     def do_start(self,game):
         ''' starts the game '''
         out = dict()
-        if users.get_current_user().email != game.playerlist[0]:
+        if users.get_current_user().email() != game.playerlist[0]:
             return self.fail('Only the creator may start the game')
         game.start()
         game.save()

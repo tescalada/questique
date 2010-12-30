@@ -2,6 +2,29 @@
 {% block js-preload %}
     <script language="javascript">
         setTimeout("location.reload(true);", 5000); 
+
+function joinGame(){
+    $.getJSON('join', function(data) {
+        if (data.status == 'success'){
+            location.reload();
+        } else {
+            alert(data.error);
+        }
+    });
+}
+
+function startGame(){
+    $.getJSON('start', function(data) {
+        if (data.status == 'success'){
+            location.reload();
+        } else {
+            alert(data.error);
+        }
+    });
+}
+
+
+
     </script>
 {% endblock %}
 {% block content %}

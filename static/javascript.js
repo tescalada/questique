@@ -218,29 +218,6 @@ function dumpTiles(){
 }
 
 
-function joinGame(){
-    $.getJSON('join', function(data) {
-        if (data.status == 'success'){
-            location.reload();
-        } else {
-            alert(data.error);
-        }
-    });
-}
-
-
-function startGame(){
-    $.getJSON('start', function(data) {
-        if (data.status == 'success'){
-            location.reload();
-        } else {
-            alert(data.error);
-        }
-    });
-}
-
-
-
 
 
 function resetTiles(){
