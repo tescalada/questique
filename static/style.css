@@ -20,6 +20,7 @@ td.filled {background-color:lightgrey}
     height: 26px;
     text-align: center;
     width: 28px;
+    line-height: 26px;
 }
 .hand_tile {
     float: left;
@@ -35,16 +36,19 @@ td.filled {background-color:lightgrey}
     background-color: #FF0000;
     -moz-transform:rotate(-90deg);
     -webkit-transform:rotate(-90deg);
+    line-height: 24px;
 }
 .tile_position_ur {
     background-color: #FF7400;
     -moz-transform:rotate(180deg);
     -webkit-transform:rotate(180deg);
+    line-height: 25px;
 }
 .tile_position_ul {
     background-color: #009999;
     -moz-transform:rotate(90deg);
     -webkit-transform:rotate(90deg);
+    line-height: 27px;
 }
 .ui-state-active {
     background-color: gray;

@@ -52,11 +52,14 @@ class ApiHandler(webapp.RequestHandler):
             sendMessage(game, dict(updatetiles=1))
         self.response.out.write(simplejson.dumps(out))
 
-    def do_chat(self,game):
+    def do_chat(self, game):
         '''testing chat'''
         name = users.get_current_user().nickname()
         message = cgi.escape(self.request.get('message'))
-        sendMessage(game, dict(chat= '%s: %s' % (name, message)))
+        chat = '%s: %s' % (name, message)
+        game.chat += '\n' + chat
+        game.save()
+        sendMessage(game, dict(chat=chat))
 
     def do_tiles(self, game):
         '''gets the list of tiles played and player scores '''
@@ -256,6 +259,7 @@ class GameHandler(webapp.RequestHandler):
                 'position': game.myPosition()[-1],
                 'players': game.playerlist,
                 'profiles': jsonprofiles,
+                'chat': game.chat,
                 'logout' : users.create_logout_url("/"),
                 'token': channel.create_channel(users.get_current_user().email() + str(game.key())),
                 }

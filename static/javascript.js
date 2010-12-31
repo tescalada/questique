@@ -34,12 +34,13 @@ function openChannel(token){
     var data = JSON.parse(message.data);
         if (data.chat){
             $('#chatwindow').append('\n' + data.chat); 
+            $('#chatwindow').attr('scrollTop',$('#chatwindow').attr('scrollHeight') );
         } else {
             updateTiles(); 
         } 
     };
-    socket.onerror = function(){ alert('onerror'); };
-    socket.onclose = function(){ alert('onclose'); };
+    socket.onerror = function(){ alert('An error occured, the page will now reload'); location.reload(); };
+    socket.onclose = function(){ alert('Your connection has closed, the page will now refresh to get a new one'); location.reload(); };
 }
 
 
@@ -187,7 +188,9 @@ function updateTiles(){
 function submitTiles(){
     placedtiles = new Object();
     $('td div.hand_tile').each(function(){ 
-        placedtiles[$(this).parent('td').attr('id')] = $(this).html(); 
+        if ($(this).parent('td').attr('id')){
+            placedtiles[$(this).parent('td').attr('id')] = $(this).html(); 
+        }
     });
 
     $.getJSON('submittiles', placedtiles, function(data) {

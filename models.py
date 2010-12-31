@@ -37,6 +37,7 @@ class Game(db.Model):
     status = db.StringProperty()
     playerlist = db.StringListProperty()
     playerhands = GenericListProperty()
+    chat = db.TextProperty()
 
     def getPlayerByEmail(self,email):
         ''' turns an email into a user object '''
@@ -94,6 +95,7 @@ class Game(db.Model):
         self.turns = 0
         self.players = len(self.playerlist)
         self.status = 'inprogress'
+        self.chat = 'Chat:'
         shuffle(self.playerlist)
         for player in enumerate(self.playerlist):
             self.playerhands.append([])
