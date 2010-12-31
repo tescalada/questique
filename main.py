@@ -54,7 +54,8 @@ class ApiHandler(webapp.RequestHandler):
 
     def do_chat(self, game):
         '''testing chat'''
-        name = users.get_current_user().nickname()
+        name = users.get_current_user().nickname().split('@')[0]
+
         message = cgi.escape(self.request.get('message'))
         chat = '%s: %s' % (name, message)
         game.chat += '\n' + chat
@@ -66,7 +67,8 @@ class ApiHandler(webapp.RequestHandler):
         out = dict()
         out['timestamp'] = int(time())
         currentplayer = game.currentPlayer()
-        out['currentplayer'] = currentplayer.nickname()
+        playerhash = 'p%s' % hash(currentplayer.email())
+        out['currentplayer'] = playerhash
         if currentplayer == users.get_current_user():
             out['myturn'] = 1
         tiles = Tile.all().filter('game =', game)
@@ -83,7 +85,8 @@ class ApiHandler(webapp.RequestHandler):
 
         scores = dict()
         for player in game.playerlist:
-            scores[game.getPlayerByEmail(player).nickname()] = Tile.all().filter('game =', game).filter('isStar =', True).filter('player =', game.getPlayerByEmail(player)).count()
+            playerhash = 'p%s' % hash(player)
+            scores[playerhash] = Tile.all().filter('game =', game).filter('isStar =', True).filter('player =', game.getPlayerByEmail(player)).count()
         out['scores'] = scores
         return out
 
@@ -201,7 +204,7 @@ class ApiHandler(webapp.RequestHandler):
     def do_join(self,game):
         ''' starts the game '''
         out = dict()
-        if users.get_current_user().email in game.playerlist:
+        if users.get_current_user().email() in game.playerlist:
             return self.fail('You are already in this game')
         game.join()
         game.save()
@@ -242,7 +245,8 @@ class GameHandler(webapp.RequestHandler):
             for player in game.playerlist:
                 profile = dict()
                 profile['gravatar'] = "http://www.gravatar.com/avatar/%s?%s" % (hashlib.md5(player.lower()).hexdigest(),urllib.urlencode({'d':default,'s':str(size)})) 
-                profile['name'] = game.getPlayerByEmail(player).nickname()
+                profile['name'] = game.getPlayerByEmail(player).nickname().split('@')[0]
+                profile['hash'] = 'p%s' % hash(player)
                 profiles.append(profile)
 
             cut = int(game.myPosition()[-1]) - 1

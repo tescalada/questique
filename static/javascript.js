@@ -13,6 +13,8 @@ $(document).ready(function() {
     var count = 1;
     for (var profile in profiles){
         profile = profiles[profile];
+        console.log(profile.hash);
+        $('div#player'+count+'profile').addClass(profile.hash);
         $('div#player'+count+'profile').append("<img src='"+profile.gravatar+"' style='float:left;'/>");
         $('div#player'+count+'profile').append("<div class='info'><div>"+profile.name+"</div><div class='stars'></div></div>");
         count += 1;
@@ -151,10 +153,10 @@ function updateTiles(){
         timesinceupdate = data.timestamp;
 
         $('.playerprofile').css('background-color','lightblue');
-        $('.playerprofile div:contains("'+data.currentplayer+'")').parent('.playerprofile').css('background-color','red');
+        $('.' + data.currentplayer).css('background-color','red');
 
-        for (player in data.scores){
-            $('.playerprofile div:contains("'+player+'")').parent('.playerprofile').find('div.stars').html(Array(data.scores[player]+1).join("*"));
+        for (playerhash in data.scores){
+            $('.' + playerhash).find('div.stars').html(Array(data.scores[playerhash]+1).join("*"));
         }
         makeDroppable();
 
