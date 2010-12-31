@@ -5,13 +5,13 @@
         var player = '{{player}}';
         var playercount = '{{playercount}}';
         var position = '{{position}}';
-
         var profiles = JSON.parse('{{profiles}}');
-
     </script>
     <script language="javascript" src="/static/javascript.js"></script>
     <script language="javascript">
-        openChannel('{{token}}');
+        $(document).ready(function() {
+            openChannel('{{token}}');
+        });
     </script>
 {% endblock %}
 {% block content %}

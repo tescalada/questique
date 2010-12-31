@@ -151,11 +151,8 @@ function updateTiles(){
         $('.playerprofile').css('background-color','lightblue');
         $('.playerprofile div:contains("'+data.currentplayer+'")').parent('.playerprofile').css('background-color','red');
 
-        count = 1;
         for (player in data.scores){
-            console.log(player);
             $('.playerprofile div:contains("'+player+'")').parent('.playerprofile').find('div.stars').html(Array(data.scores[player]+1).join("*"));
-            count += 1;
         }
         makeDroppable();
 
