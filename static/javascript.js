@@ -14,10 +14,11 @@ $(document).ready(function() {
     for (var profile in profiles){
         profile = profiles[profile];
         $('div#player'+count+'profile').append("<img src='"+profile.gravatar+"' style='float:left;'/>");
-        $('div#player'+count+'profile').append("<div class='info'><div>"+profile.name+"</div><div class='stars'>****</div></div>");
+        $('div#player'+count+'profile').append("<div class='info'><div>"+profile.name+"</div><div class='stars'></div></div>");
         count += 1;
     }
 
+    $('#chatwindow').attr('scrollTop',$('#chatwindow').attr('scrollHeight') );
 });
 
 function chat(){

@@ -83,7 +83,7 @@ class ApiHandler(webapp.RequestHandler):
 
         scores = dict()
         for player in game.playerlist:
-            scores[player] = Tile.all().filter('game =', game).filter('isStar =', True).filter('player =', game.getPlayerByEmail(player)).count()
+            scores[game.getPlayerByEmail(player).nickname()] = Tile.all().filter('game =', game).filter('isStar =', True).filter('player =', game.getPlayerByEmail(player)).count()
         out['scores'] = scores
         return out
 
@@ -288,9 +288,15 @@ class ResetHandler(webapp.RequestHandler):
         db.delete(Tile.all())
         self.redirect("/")
 
+class LogoutHandler(webapp.RequestHandler):
+    ''' redirects to logout url '''
+    def get(self):
+        self.redirect(users.create_logout_url("/"))
+
 def main():
     application = webapp.WSGIApplication([('/', MainHandler),
                                           ('/reset', ResetHandler),
+                                          ('/logout', LogoutHandler),
                                           ('/game/(\w*)/', GameHandler),
                                           ('/game/([\w-]*)/(\w*)', ApiHandler),
                                           ('/new', NewGameHandler)],
