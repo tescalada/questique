@@ -1,5 +1,5 @@
 td {width:30px;height:30px;text-align:center;}
-body,td {font-size:1.5em}
+body,td {font-size:1.5em;}
 td {border-color:black; margin:0;padding:0; border-style:solid;border-width:1px;}
 td.star {border-width:1px; border-color:red; padding:0; background-color:red}
 td.start {border-width:1px; border-color:blue; padding:0; background-color:blue}
@@ -49,3 +49,32 @@ td.filled {background-color:lightgrey}
 .ui-state-active {
     background-color: gray;
 }
+
+
+.stars {font-size:50px; color:#ffd311;}
+
+/*
+.star {
+    float: left;
+    display: block;
+    overflow: hidden;
+    text-indent: -999em;
+    cursor: default !important;
+    width: 30px;
+    height: 30px;
+    display: block;
+    background: url(/static/ui.stars.gif) no-repeat 0 0;
+    background-position: 0 -92px;
+}
+.star-off {
+    background: url(/static/ui.stars.gif) no-repeat 0 0;
+    background-position: 0 -61px;
+}
+*/
+
+.playerprofile {background:lightblue;width:120px;height:220px;text-align:center; border: solid black 1px; margin:auto;}
+.playerprofile .info {width:220px;float:right;}
+.horizontalprofile {width:320px;height:100px;}
+#scores { display:none; }
+#chat {float:right;background-color:lightgray;width:100%}
+#chatwindow {width:100%;height:374px;}

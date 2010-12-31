@@ -12,6 +12,7 @@ import os
 from django.utils import simplejson
 from time import time
 from datetime import datetime
+import urllib, hashlib
 
 def render_template(response, templateName, values):
     path = os.path.join(os.path.dirname(__file__), templateName)
@@ -77,10 +78,10 @@ class ApiHandler(webapp.RequestHandler):
                 playerposition=tile.position)
             out['tiles'].append(t)
 
-        out['scores'] = []
+        scores = dict()
         for player in game.playerlist:
-            stars = Tile.all().filter('game =', game).filter('isStar =', True).filter('player =', game.getPlayerByEmail(player)).count()
-            out['scores'].append(stars)
+            scores[player] = Tile.all().filter('game =', game).filter('isStar =', True).filter('player =', game.getPlayerByEmail(player)).count()
+        out['scores'] = scores
         return out
 
     def do_placetile(self, game):
@@ -222,14 +223,31 @@ class NewGameHandler(webapp.RequestHandler):
     def get(self):
         game = Game.create()
         game.save()
-        return self.redirect("/game/%s/new" % game.key())
+        return self.redirect("/game/%s/" % game.key())
 
 class GameHandler(webapp.RequestHandler):
     ''' the game '''
     @login_required
     def get(self,id):
         game = Game.get(id)
+
+        default = "http://www.example.com/default.jpg"
+        size = 100
+        profiles = []
+
         if game.status == 'inprogress':
+            for player in game.playerlist:
+                profile = dict()
+                profile['gravatar'] = "http://www.gravatar.com/avatar/%s?%s" % (hashlib.md5(player.lower()).hexdigest(),urllib.urlencode({'d':default,'s':str(size)})) 
+                profile['name'] = game.getPlayerByEmail(player).nickname()
+                profiles.append(profile)
+
+            cut = int(game.myPosition()[-1]) - 1
+            profiles = profiles[cut:] + profiles[:cut]
+
+            jsonprofiles = simplejson.dumps(profiles)
+
+
             template_values = {
                 'playedtiles':Tile.all(),
                 'tiles': game.myHand(),
@@ -237,6 +255,8 @@ class GameHandler(webapp.RequestHandler):
                 'playercount': game.players,
                 'position': game.myPosition()[-1],
                 'players': game.playerlist,
+                'profiles': jsonprofiles,
+                'logout' : users.create_logout_url("/"),
                 'token': channel.create_channel(users.get_current_user().email() + str(game.key())),
                 }
         elif game.status == 'waiting':

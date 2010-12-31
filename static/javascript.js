@@ -9,6 +9,15 @@ $(document).ready(function() {
     //    axis: 'x'
     //});
     $(".board_tile").disableSelection();
+
+    var count = 1;
+    for (var profile in profiles){
+        profile = profiles[profile];
+        $('div#player'+count+'profile').append("<img src='"+profile.gravatar+"' style='float:left;'/>");
+        $('div#player'+count+'profile').append("<div class='info'><div>"+profile.name+"</div><div class='stars'>****</div></div>");
+        count += 1;
+    }
+
 });
 
 function chat(){
@@ -24,7 +33,7 @@ function openChannel(token){
     socket.onmessage = function(message){ 
     var data = JSON.parse(message.data);
         if (data.chat){
-            $('#chatwindow').append(data.chat + '\n'); 
+            $('#chatwindow').append('\n' + data.chat); 
         } else {
             updateTiles(); 
         } 
@@ -139,10 +148,13 @@ function updateTiles(){
     $.getJSON('tiles', {since:timesinceupdate}, function(data) {
         timesinceupdate = data.timestamp;
 
-        $('#currentplayername').html(data.currentplayer);
+        $('.playerprofile').css('background-color','lightblue');
+        $('.playerprofile div:contains("'+data.currentplayer+'")').parent('.playerprofile').css('background-color','red');
+
         count = 1;
-        for (score in data.scores){
-            $('#player'+count+'score').html(data.scores[score]);
+        for (player in data.scores){
+            console.log(player);
+            $('.playerprofile div:contains("'+player+'")').parent('.playerprofile').find('div.stars').html(Array(data.scores[player]+1).join("*"));
             count += 1;
         }
         makeDroppable();
