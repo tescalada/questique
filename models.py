@@ -118,7 +118,8 @@ class Game(db.Model):
         ''' continue play to the next player '''
         currenthand = self.currentHand()
         for x in range(7-len(currenthand)):
-            currenthand.append(self.tiles.pop())
+            if self.tiles:
+                currenthand.append(self.tiles.pop())
         self.turns += 1
 
 class Player(db.Expando):

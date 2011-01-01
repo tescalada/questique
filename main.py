@@ -105,7 +105,7 @@ class ApiHandler(webapp.RequestHandler):
         out['currentplayer'] = playerhash
         if currentplayer.key() == Player.get_current_player().key():
             out['myturn'] = 1
-        tiles = Tile.all().filter('game =', game)
+        tiles = game.gametiles
         since = cgi.escape(self.request.get('since'))
         if since:
             since = datetime.fromtimestamp(int(since))
@@ -120,7 +120,14 @@ class ApiHandler(webapp.RequestHandler):
         scores = dict()
         for player in game.playerlist:
             player = game.getPlayerByEmail(player)
-            scores[str(player.key())] = Tile.all().filter('game =', game).filter('isStar =', True).filter('player =', player).count()
+            score = game.gametiles.filter('player =',player).filter('isStar =', True).count()
+            scores[str(player.key())] = score
+            if (len(game.playerlist) > 1 and score >= 4) or score == 16:
+                    out['gameover'] = 1
+                    out['winner'] = player.name
+                    if player.key() == Player.get_current_player().key():
+                        out['youwin'] = 1
+
         out['scores'] = scores
 
         out['challengable'] = []
@@ -185,7 +192,7 @@ class ApiHandler(webapp.RequestHandler):
                 return self.fail('You do not have the %s tile' % value)
 
             # is there already a tile on that spot?
-            if Tile.all().filter('game =', game).filter('col =',int(col)).filter('row =',int(row)).count():
+            if game.gametiles.filter('col =',int(col)).filter('row =',int(row)).count():
                 return self.fail('You cannot place one tile on top of another')
 
             tile = Tile(col=int(col),row=int(row),value=value,game=game,position=position)
@@ -204,7 +211,7 @@ class ApiHandler(webapp.RequestHandler):
         # check validity of other tiles
         touching = False
         for tile in surrounding:
-            othertile = Tile.all().filter('game =', game).filter('col =',int(tile[0])).filter('row =',int(tile[1])).get()
+            othertile = game.gametiles.filter('col =',int(tile[0])).filter('row =',int(tile[1])).get()
             # are no tiles touching a tile of someone elses
             if othertile:
                 if othertile.player.key() != currentplayer.key():
@@ -213,7 +220,7 @@ class ApiHandler(webapp.RequestHandler):
                     touching = True
 
         firstmove = False
-        if Tile.all().filter('game =', game).filter('player =', currentplayer).count() == 0:
+        if game.gametiles.filter('player =',currentplayer).count() == 0:
             firstmove = True
 
         if firstmove and not start:
@@ -301,7 +308,6 @@ class GameHandler(webapp.RequestHandler):
 
 
             template_values = {
-                'playedtiles':Tile.all(),
                 'tiles': game.myHand(),
                 'player': game.myPosition(),
                 'playercount': game.players,

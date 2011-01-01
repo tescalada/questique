@@ -1,4 +1,4 @@
-td {width:30px;height:30px;text-align:center;}
+#board tr td {width:30px;height:30px;text-align:center;}
 body,td {font-size:1.5em;}
 td {border-color:black; margin:0;padding:0; border-style:solid;border-width:1px;}
 td.star {border-width:1px; border-color:red; padding:0; background-color:red}
@@ -8,8 +8,7 @@ td.filled {background-color:lightgrey}
 #hand {
     padding: 4px;
     background-color: lightgrey;
-    min-height:40px;
-    width: 300px;
+    width: 224px;
     float:left;
 }
 .hand_tile, 
@@ -56,6 +55,7 @@ td.filled {background-color:lightgrey}
 
 
 .stars {font-size:50px; color:#ffd311;}
+.graystars {font-size:50px; color:lightgray;}
 
 /*
 .star {
@@ -76,10 +76,9 @@ td.filled {background-color:lightgrey}
 }
 */
 
-.playerprofile {background:lightblue;width:120px;height:220px;text-align:center; border: solid black 1px; margin:auto;}
-.playerprofile .info {width:220px;float:right;}
-.horizontalprofile {width:320px;height:100px;}
+.playerprofile {background:lightblue;height:100px;text-align:center; border: solid black 2px; margin:auto;}
 #scores { display:none; }
 #chat {float:right;background-color:lightgray;width:100%}
 #chatwindow {width:100%;height:374px;}
 .challengable { background-color:yellow; }
+#sidepanel { width:520px;}

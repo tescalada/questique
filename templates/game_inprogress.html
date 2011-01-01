@@ -16,16 +16,22 @@
 {% endblock %}
 {% block content %}
 
-    <div id='board' style='float:left;'></div>
+    <table id='board' style='float:left;'></table>
 
-    <table>
+    <table id='sidepanel'>
+        {% ifnotequal playercount 1 %}
+        {% ifnotequal playercount 2 %}
         <tr>
-            <td><div id='player4profile' class='playerprofile horizontalprofile'></div></td>
-            <td><div id='player3profile' class='playerprofile horizontalprofile'></div></td>
+            <td id='player4profile' class='playerprofile'></td>
+            <td id='player3profile' class='playerprofile'></td>
         </tr>
+        {% endifnotequal %}
+        {% endifnotequal %}
         <tr>
-            <td><div id='player1profile' class='playerprofile horizontalprofile'></div></td>
-            <td><div id='player2profile' class='playerprofile horizontalprofile'></div></td>
+            <td id='player1profile' {% ifequal playercount 1 %} colspan='2' {% endifequal %} class='playerprofile'></td>
+            {% ifnotequal playercount 1 %}
+            <td id='player2profile' class='playerprofile'></td>
+            {% endifnotequal %}
         </tr>
         <tr>
             <td colspan='2'>
@@ -42,22 +48,22 @@
         <tr>
             <td colspan='2'>
 
-                <div style='width:600px;'>
+                <span style='width:505px;'>
                     <div id='hand'>
                     {% for tile in tiles %}
                         <div class='hand_tile'>{{tile}}</div>
                     {% endfor %}
                     </div>
                     &nbsp;
-                    <div style='float:right;'>
+                    <span>
                         <span id='actions'>
                             <input type='button' onclick='submitTiles();' value='submit'/>       
                             <input type='button' onclick='dumpTiles();' value='dump'/>       
                         </span>
                         <input type='button' onclick='resetTiles();' value='reset'/>       
                         <input type='button' onclick='challengeTiles();' value='challenge'/>       
-                    </div>
-                </div>
+                    </span>
+                </span>
             </td>
         </tr>
     </table>

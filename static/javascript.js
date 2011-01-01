@@ -1,5 +1,5 @@
 $(document).ready(function() {
-    $("#board").html(buildBoard(player));
+    buildBoard(player);
     updateTiles();
     setInterval ( "updateTiles()", 60000 );
     $( ".hand_tile" ).draggable({ revert: "invalid"});
@@ -14,13 +14,14 @@ $(document).ready(function() {
     for (var profile in profiles){
         profile = profiles[profile];
         console.log(profile);
-        $('div#player'+count+'profile').addClass(profile.key);
-        $('div#player'+count+'profile').append("<img src='"+profile.gravatar+"' style='float:left;'/>");
-        $('div#player'+count+'profile').append("<div class='info'><div>"+profile.name+"</div><div class='stars'></div></div>");
+        $('td#player'+count+'profile').addClass(profile.key);
+        $('td#player'+count+'profile').append("<img src='"+profile.gravatar+"' style='float:left;'/>");
+        $('td#player'+count+'profile').append("<div class='info'><div>"+profile.name+"</div><div class='stars'><span class='yellowstars'></span><span class='graystars'></span></div></div>");
         count += 1;
     }
 
     $('#chatwindow').attr('scrollTop',$('#chatwindow').attr('scrollHeight') );
+    $('#chatwindow').height( $('#chatwindow').height() +  $('table#board').height() - $('table#sidepanel').height());
 });
 
 function chat(){
@@ -82,7 +83,7 @@ function makeDroppable(){
 }
 
 function buildBoard(player){
-    var table = $('<table></table>');
+    var table = $('#board');
 
     if (player == "player1"){
         for (var r = 1; r <= 22; r++) {
@@ -117,7 +118,6 @@ function buildBoard(player){
             table.append(tr);
         }
     } 
-    return table;
 }
 
 
@@ -147,19 +147,37 @@ function setTile(col,row,val){
 
 posarray = '';
 
+gamestatus = 'inprogress'
+
 timesinceupdate = 0;
 function updateTiles(){
+    if (gamestatus != 'inprogress'){
+        return ;
+    }
     $.getJSON('tiles', {since:timesinceupdate}, function(data) {
         timesinceupdate = data.timestamp;
 
         $('.playerprofile').css('background-color','lightblue');
         $('.' + data.currentplayer).css('background-color','red');
 
+        maxstars = 4;
+        if (playercount == 1){
+            maxstars = 16;
+        }
         for (playerkey in data.scores){
-            $('.' + playerkey).find('div.stars').html(Array(data.scores[playerkey]+1).join("*"));
+            $('.' + playerkey).find('div.stars span.yellowstars').html(Array(data.scores[playerkey]+1).join("*"));
+            $('.' + playerkey).find('div.stars span.graystars').html(Array(maxstars - data.scores[playerkey]+1).join("*"));
         }
         makeDroppable();
 
+        if (data.gameover == '1'){
+            if (data.youwin == '1'){
+                alert('You win!');
+            } else {
+                alert('You lose! ' + data.winner + ' won!');
+            }
+            gamestatus = 'over';
+        }
         if (data.myturn == '1'){
             $('#actions').show();
         } else {
