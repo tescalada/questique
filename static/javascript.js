@@ -13,8 +13,8 @@ $(document).ready(function() {
     var count = 1;
     for (var profile in profiles){
         profile = profiles[profile];
-        console.log(profile.hash);
-        $('div#player'+count+'profile').addClass(profile.hash);
+        console.log(profile);
+        $('div#player'+count+'profile').addClass(profile.key);
         $('div#player'+count+'profile').append("<img src='"+profile.gravatar+"' style='float:left;'/>");
         $('div#player'+count+'profile').append("<div class='info'><div>"+profile.name+"</div><div class='stars'></div></div>");
         count += 1;
@@ -42,8 +42,8 @@ function openChannel(token){
             updateTiles(); 
         } 
     };
-    socket.onerror = function(){ alert('An error occured, the page will now reload'); location.reload(); };
-    socket.onclose = function(){ alert('Your connection has closed, the page will now refresh to get a new one'); location.reload(); };
+    socket.onerror = function(){ location.reload(); };
+    socket.onclose = function(){ location.reload(); };
 }
 
 
@@ -155,8 +155,8 @@ function updateTiles(){
         $('.playerprofile').css('background-color','lightblue');
         $('.' + data.currentplayer).css('background-color','red');
 
-        for (playerhash in data.scores){
-            $('.' + playerhash).find('div.stars').html(Array(data.scores[playerhash]+1).join("*"));
+        for (playerkey in data.scores){
+            $('.' + playerkey).find('div.stars').html(Array(data.scores[playerkey]+1).join("*"));
         }
         makeDroppable();
 
@@ -183,6 +183,12 @@ function updateTiles(){
             }
 
             $('#'+tile.cell).html('<div class="board_tile '+positionClass+'">'+tile.value+'</div>').addClass('p'+tile.player);
+        }
+
+        $('div.board_tile').removeClass('challengable');
+        for (tile in data.challengable){
+            tile = data.challengable[tile];
+            $('#' + tile + ' div.board_tile').addClass('challengable');
         }
     });
 }
@@ -219,6 +225,10 @@ function dumpTiles(){
             if (data.status == 'success'){
                 updateTiles();
                 $('#hand').html('');
+                $(".hand_tile").each(function(idx,tile) {
+                    $(tile).remove();
+                });
+
                 for (tile in data.hand){
                     $('#hand').append('<div class="hand_tile">'+data.hand[tile]+'</div>');
                 }
@@ -229,6 +239,13 @@ function dumpTiles(){
                 resetTiles();
             }
         });
+    }
+}
+
+
+function challengeTiles(){
+    if (confirm('Are you sure you want to challenge the yellow tiles?')){
+        alert("too bad you can't do that yet");
     }
 }
 

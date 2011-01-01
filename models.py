@@ -3,6 +3,10 @@ from django.utils import simplejson
 from google.appengine.api import users
 from random import shuffle
 import pickle # is simplejson faster?
+import datetime
+import time
+
+
 
 tilecounts = {  'A':15, 'B': 4, 'C': 3,
                 'D': 6, 'E':20, 'F': 3,
@@ -38,16 +42,17 @@ class Game(db.Model):
     playerlist = db.StringListProperty()
     playerhands = GenericListProperty()
     chat = db.TextProperty()
+    lastword = db.ListProperty(db.Key)
 
     def getPlayerByEmail(self,email):
         ''' turns an email into a user object '''
         if email in self.playerlist:
-            return users.User(email)
+            return Player.get_by_email(email)
 
     def getPlayerByPosition(self,position):
         ''' turns a position 1-4 into a user object '''
         if position >= 1 and position <= len(self.playerlist):
-            return users.User(self.playerlist[position-1])
+            return Player.get_by_email(self.playerlist[position-1])
 
     def currentPlayer(self):
         ''' get the player whos turn it is to play '''
@@ -116,6 +121,46 @@ class Game(db.Model):
             currenthand.append(self.tiles.pop())
         self.turns += 1
 
+class Player(db.Expando):
+    user = db.UserProperty()
+    name = db.StringProperty()
+    gravatar = db.StringProperty()
+    games = db.IntegerProperty()
+    wins = db.IntegerProperty()
+    losses = db.IntegerProperty()
+    bestsoloscore = db.IntegerProperty()
+    challengesrecievedwon = db.IntegerProperty()
+    challengesrecievedlost = db.IntegerProperty()
+    challengesissuedwon = db.IntegerProperty()
+    challengesissuedlost = db.IntegerProperty()
+
+    @classmethod
+    def get_by_email(cls,email):
+        ''' class method to get a player by email '''
+        return cls.all().filter('user =', users.User(email)).get()
+
+    @classmethod
+    def get_current_player(cls):
+        ''' class method to get the current player '''
+        return cls.all().filter('user =', users.get_current_user()).get()
+
+
+
+    def to_dict(self):
+        SIMPLE_TYPES = (int, long, float, bool, dict, basestring, list)
+        output = {}
+        for key in self.properties():
+            #output[key] = 'value'
+            value = getattr(self, key)
+            if value is None or isinstance(value, SIMPLE_TYPES):
+                output[key] = value
+            #else:
+            #    pass
+                #raise ValueError('cannot encode ' + repr(prop))
+        output['key'] = str(self.key())
+        return output
+
+
 class Tile(db.Model):
     ''' tile model '''
     value = db.StringProperty()
@@ -123,8 +168,8 @@ class Tile(db.Model):
     col = db.IntegerProperty()
     isStar = db.BooleanProperty()
     status = db.StringProperty()
-    player = db.UserProperty()
-    game = db.ReferenceProperty(Game)
+    player = db.ReferenceProperty(Player, collection_name='playertiles')
+    game = db.ReferenceProperty(Game, collection_name='gametiles')
     timestamp = db.DateTimeProperty(auto_now=True)
     position = db.IntegerProperty()
 
@@ -135,7 +180,6 @@ class Tile(db.Model):
             self.isStar = True
         else:
             self.isStar = False
-        self.player = users.get_current_user()
+        self.player = Player.get_current_player()
         db.Model.save(self)
-
 

@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 from google.appengine.ext import webapp, db
 from google.appengine.ext.webapp import template
-from google.appengine.ext.webapp.util import run_wsgi_app, login_required
+from google.appengine.ext.webapp.util import run_wsgi_app
 
 from google.appengine.api import users, channel
 import cgi
-from models import Game, Tile
+from models import Game, Tile, Player
 import random
 import string
 import os
@@ -13,6 +13,39 @@ from django.utils import simplejson
 from time import time
 from datetime import datetime
 import urllib, hashlib
+
+def player_required(handler_method):
+    """A decorator to require that a user be logged in and have a player profile to access a handler.
+
+    To use it, decorate your get() method like this:
+
+        @player_required
+        def get(self):
+            player = Player.get_current_player(self)
+            self.response.out.write('Hello, ' + player.user.nickname())
+
+    We will redirect to a login page if the user is not logged in. We always
+    redirect to the request URI, and Google Accounts only redirects back as a GET
+    request, so this should not be used for POSTs.
+    Will also create a profile if the currently logged in user does not have one.
+    """
+    def check_login(self, *args):
+        if self.request.method != 'GET':
+            raise webapp.Error('The player_required decorator can only be used for GET requests')
+        user = users.get_current_user()
+        if not user:
+            return self.redirect(users.create_login_url(self.request.uri))
+        player = Player.all().filter('user =', user).get()
+        if not player:
+
+            default = "http://www.example.com/default.jpg"
+            size = 100
+            gravatar = "http://www.gravatar.com/avatar/%s?%s" % (hashlib.md5(user.email().lower()).hexdigest(),urllib.urlencode({'d':default,'s':str(size)}))
+            player = Player(user=user, gravatar=gravatar, games=0, wins=0, losses=0, bestsoloscore=0, name=str(user.nickname()).split('@')[0])
+            player.save()
+        return handler_method(self, *args)
+    return check_login
+
 
 def render_template(response, templateName, values):
     path = os.path.join(os.path.dirname(__file__), templateName)
@@ -30,12 +63,12 @@ class MainHandler(webapp.RequestHandler):
             'games': games,
         }
 
-        render_template(self.response, 
+        render_template(self.response,
             'templates/index.html', template_values)
 
 class ApiHandler(webapp.RequestHandler):
     ''' handles all api requests, dispatches requests '''
-    @login_required
+    @player_required
     def get(self,id,action):
         self.response.headers['Content-Type'] = 'application/json'
         gameid = cgi.escape(self.request.get('game'))
@@ -54,7 +87,7 @@ class ApiHandler(webapp.RequestHandler):
 
     def do_chat(self, game):
         '''testing chat'''
-        name = users.get_current_user().nickname().split('@')[0]
+        name = Player.get_current_player().name
 
         message = cgi.escape(self.request.get('message'))
         chat = '%s: %s' % (name, message)
@@ -67,9 +100,10 @@ class ApiHandler(webapp.RequestHandler):
         out = dict()
         out['timestamp'] = int(time())
         currentplayer = game.currentPlayer()
-        playerhash = 'p%s' % hash(currentplayer.email())
+        #playerhash = 'p%s' % hash(currentplayer.email())
+        playerhash = str(currentplayer.key())
         out['currentplayer'] = playerhash
-        if currentplayer == users.get_current_user():
+        if currentplayer.key() == Player.get_current_player().key():
             out['myturn'] = 1
         tiles = Tile.all().filter('game =', game)
         since = cgi.escape(self.request.get('since'))
@@ -79,15 +113,21 @@ class ApiHandler(webapp.RequestHandler):
         out['tiles'] = []
         for tile in tiles:
             t = dict(cell='%s-%s' % (tile.col,tile.row),
-                value=tile.value,player=tile.player.user_id(),
+                value=tile.value,player=str(tile.player.key()),
                 playerposition=tile.position)
             out['tiles'].append(t)
 
         scores = dict()
         for player in game.playerlist:
-            playerhash = 'p%s' % hash(player)
-            scores[playerhash] = Tile.all().filter('game =', game).filter('isStar =', True).filter('player =', game.getPlayerByEmail(player)).count()
+            player = game.getPlayerByEmail(player)
+            scores[str(player.key())] = Tile.all().filter('game =', game).filter('isStar =', True).filter('player =', player).count()
         out['scores'] = scores
+
+        out['challengable'] = []
+        for id in game.lastword:
+            tile = Tile.get(id)
+            out['challengable'].append('%s-%s' % (tile.col, tile.row))
+
         return out
 
     def do_placetile(self, game):
@@ -122,8 +162,9 @@ class ApiHandler(webapp.RequestHandler):
         cols = []
         surrounding = []
         position = int(game.myPosition()[-1])
+        currentplayer = Player.get_current_player(); 
 
-        if game.currentPlayer() != users.get_current_user():
+        if game.currentPlayer().key() != currentplayer.key():
             return self.fail('It is not your turn')
 
         for arg in self.request.arguments():
@@ -166,13 +207,13 @@ class ApiHandler(webapp.RequestHandler):
             othertile = Tile.all().filter('game =', game).filter('col =',int(tile[0])).filter('row =',int(tile[1])).get()
             # are no tiles touching a tile of someone elses
             if othertile:
-                if othertile.player != users.get_current_user():
+                if othertile.player.key() != currentplayer.key():
                     return self.fail("Your tiles cannot touch another player's tiles")
                 else:
                     touching = True
 
         firstmove = False
-        if Tile.all().filter('game =', game).filter('player =', users.get_current_user()).count() == 0:
+        if Tile.all().filter('game =', game).filter('player =', currentplayer).count() == 0:
             firstmove = True
 
         if firstmove and not start:
@@ -182,8 +223,11 @@ class ApiHandler(webapp.RequestHandler):
         if not touching and not firstmove: 
             return self.fail('Your tiles must touch your other tiles')
 
+        game.lastword = []
+
         for tile in word:
             tile.save()
+            game.lastword.append(tile.key())
             game.currentHand().remove(tile.value)
         game.nextturn()
         game.save()
@@ -214,7 +258,7 @@ class ApiHandler(webapp.RequestHandler):
     def do_dumptiles(self,game):
         ''' swaps your hand for a new one '''
         out = dict()
-        if game.currentPlayer() != users.get_current_user():
+        if game.currentPlayer().key() != Player.get_current_player().key():
             return self.fail('It is not your turn')
         game.dumpMyHand()
         game.nextturn()
@@ -225,7 +269,7 @@ class ApiHandler(webapp.RequestHandler):
 
 class NewGameHandler(webapp.RequestHandler):
     ''' creates a new game '''
-    @login_required
+    @player_required
     def get(self):
         game = Game.create()
         game.save()
@@ -233,20 +277,21 @@ class NewGameHandler(webapp.RequestHandler):
 
 class GameHandler(webapp.RequestHandler):
     ''' the game '''
-    @login_required
+    @player_required
     def get(self,id):
         game = Game.get(id)
 
-        default = "http://www.example.com/default.jpg"
-        size = 100
+        #default = "http://www.example.com/default.jpg"
+        #size = 100
         profiles = []
+        SIMPLE_TYPES = (int, long, float, bool, dict, basestring, list)
 
         if game.status == 'inprogress':
-            for player in game.playerlist:
-                profile = dict()
-                profile['gravatar'] = "http://www.gravatar.com/avatar/%s?%s" % (hashlib.md5(player.lower()).hexdigest(),urllib.urlencode({'d':default,'s':str(size)})) 
-                profile['name'] = game.getPlayerByEmail(player).nickname().split('@')[0]
-                profile['hash'] = 'p%s' % hash(player)
+            for email in game.playerlist:
+                profile = Player.get_by_email(email).to_dict()
+                #profile['gravatar'] = "http://www.gravatar.com/avatar/%s?%s" % (hashlib.md5(player.lower()).hexdigest(),urllib.urlencode({'d':default,'s':str(size)})) 
+                #profile['name'] = game.getPlayerByEmail(player).nickname().split('@')[0]
+                #profile['hash'] = 'p%s' % hash(player)
                 profiles.append(profile)
 
             cut = int(game.myPosition()[-1]) - 1
@@ -269,7 +314,7 @@ class GameHandler(webapp.RequestHandler):
                 }
         elif game.status == 'waiting':
             template_values = {
-                'players': game.playerlist,
+                'players': [Player.get_by_email(email).name for email in game.playerlist],
             }
 
             if users.get_current_user().email() not in game.playerlist:
@@ -290,6 +335,7 @@ class ResetHandler(webapp.RequestHandler):
     def get(self):
         db.delete(Game.all())
         db.delete(Tile.all())
+        db.delete(Player.all())
         self.redirect("/")
 
 class LogoutHandler(webapp.RequestHandler):
