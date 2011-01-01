@@ -1,5 +1,8 @@
 {% extends "base.html" %}
 {% block content %}
+<h1 style='text-align:center;'>Questique Online</h1>
+<div style='float:right;width:50%;'>
+<h2>Rules:</h2>
     <p>Questique is a strategy crossword game for 1-4 players. 
     You take your turn by placing letter tiles on the board to form words either left-to-right or up-to-down, building off of your previous tiles (like in Scrabble). 
     The goal is to be the first to cover four red star squares with your tiles.</p>
@@ -18,40 +21,43 @@
     If the challenged word is indeed unacceptable, the player will get the tiles back and forfeit a turn. 
     If the challenged word is acceptable, the player who challenged it forfeits a turn.</p>
     <p>Gameplay for 1 player: Rules are the same as above, but the goal is to cover all stars on the board in the least number of turns possible.</p>
-    <p>Pool: 150 tiles (explanation of how many of each tile)</p>
-<p>
-A 15
-B 4
-C 3
-D 6
-E 20
-F 3
-G 5
-H 3
-I 14
-J 1
-K 1
-L 6
-M 5
-N 9
-O 11
-P 4
-Q 1
-R 9
-S 7
-T 9
-U 5
-V 1
-W 2
-X 1
-Y 1
-Z 1
+    <p>Pool: 150 tiles
+A:15,
+B:4,
+C:3,
+D:6,
+E:20,
+F:3,
+G:5,
+H:3,
+I:14,
+J:1,
+K:1,
+L:6,
+M:5,
+N:9,
+O:11,
+P:4,
+Q:1,
+R:9,
+S:7,
+T:9,
+U:5,
+V:1,
+W:2,
+X:1,
+Y:1,
+Z:1,
+blank:3
 </p>
-    <a href="new">create a new game</a><br/><br/>
-    Games:
+</div>
+<div style='float:left;'>
+<h2>Games:</h2>
     <ul>
-    {% for game in games %}
+        <li><a href="new">create a new game</a></li>
+        {% for game in games %}
         <li><a href='/game/{{game.key}}/'>join game</a> ({{game.playerlist|length}}/4 players)</li>
-    {% endfor %}
+        {% endfor %}
     </ul>
+</div>
 {% endblock %}
