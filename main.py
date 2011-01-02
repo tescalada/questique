@@ -61,9 +61,9 @@ def sendMessage(game,message):
 
 class MainHandler(webapp.RequestHandler):
     def get(self):
-        games = Game.all().filter('status =', 'waiting')
         template_values = {
-            'games': games,
+            'watchgames': Game.all().filter('status =', 'inprogress'),
+            'playgames': Game.all().filter('status =', 'waiting'),
         }
 
         render_template(self.response,
