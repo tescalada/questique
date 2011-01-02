@@ -353,7 +353,7 @@ def main():
     application = webapp.WSGIApplication([('/', MainHandler),
                                           ('/reset', ResetHandler),
                                           ('/logout', LogoutHandler),
-                                          ('/game/(\w*)/', GameHandler),
+                                          ('/game/([\w-]*)/', GameHandler),
                                           ('/game/([\w-]*)/(\w*)', ApiHandler),
                                           ('/new', NewGameHandler)],
                                          debug=True)

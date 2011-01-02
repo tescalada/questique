@@ -1,12 +1,15 @@
 {% extends "base.html" %}
 {% block content %}
 <h1 style='text-align:center;'>Questique Online</h1>
-<div style='float:right;width:50%;'>
-<h2>Rules:</h2>
     <p>Questique is a strategy crossword game for 1-4 players. 
     You take your turn by placing letter tiles on the board to form words either left-to-right or up-to-down, building off of your previous tiles (like in Scrabble). 
     The goal is to be the first to cover four red star squares with your tiles.</p>
-    <p>Gameplay for 2-4 players: Turn order is randomly assigned at the beginning of the game. 
+
+
+<div style='float:right;width:50%;'>
+<h2>Rules:</h2>
+    <h3>Gameplay for 2-4 players:</h3>
+    <p>Turn order is randomly assigned at the beginning of the game. 
     You are assigned 7 tiles randomly from the pool and your first word must cover the blue square in your quadrant (the lower left). 
     Words must be dictionary words and not proper nouns. 
     Your tiles may not touch another player's tiles horizontally or vertically. 
@@ -20,36 +23,10 @@
     You can only do this immediately after the word is played. 
     If the challenged word is indeed unacceptable, the player will get the tiles back and forfeit a turn. 
     If the challenged word is acceptable, the player who challenged it forfeits a turn.</p>
-    <p>Gameplay for 1 player: Rules are the same as above, but the goal is to cover all stars on the board in the least number of turns possible.</p>
-    <p>Pool: 150 tiles
-A:15,
-B:4,
-C:3,
-D:6,
-E:20,
-F:3,
-G:5,
-H:3,
-I:14,
-J:1,
-K:1,
-L:6,
-M:5,
-N:9,
-O:11,
-P:4,
-Q:1,
-R:9,
-S:7,
-T:9,
-U:5,
-V:1,
-W:2,
-X:1,
-Y:1,
-Z:1,
-blank:3
-</p>
+    <h3>Gameplay for 1 player:</h3>
+    <p>Rules are the same as above, but the goal is to cover all stars on the board in the least number of turns possible.</p>
+    <h3>Tile Pool (150 tiles):</h3>
+    <p>A:15, B:4, C:3, D:6, E:20, F:3, G:5, H:3, I:14, J:1, K:1, L:6, M:5, N:9, O:11, P:4, Q:1, R:9, S:7, T:9, U:5, V:1, W:2, X:1, Y:1, Z:1, blank:3</p>
 </div>
 <div style='float:left;'>
 <h2>Games:</h2>
@@ -60,4 +37,6 @@ blank:3
         {% endfor %}
     </ul>
 </div>
+<br style='clear:both'/>
+<p>DISCLAIMER: I am not the creator of this game. It was a board game made in England which seems to no longer exist. I built this online version because I liked the game and wanted to play it. It is as close to the original as I could make from memory. If you are the creator of this game please contact me.</p>
 {% endblock %}

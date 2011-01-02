@@ -6,6 +6,7 @@ td.star {border-width:1px; border-color:red; padding:0; background-color:red}
 td.start {border-width:1px; border-color:blue; padding:0; background-color:blue}
 td.your_start {border-width:1px; border-color:green; padding:0 background-color:green}
 td.filled {background-color:lightgrey}
+p { text-indent:40px;}
 #hand {
     padding: 4px;
     background-color: lightgrey;
