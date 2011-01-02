@@ -1,28 +1,23 @@
-$(document).ready(function() {
-    buildBoard(player);
-    updateTiles();
-    setInterval ( "updateTiles()", 60000 );
-    $( ".hand_tile" ).draggable({ revert: "invalid"});
-    makeDroppable();
-    //$( "#hand" ).sortable({
-    //    revert: false,
-    //    axis: 'x'
-    //});
-    $(".board_tile").disableSelection();
 
-    var count = 1;
-    for (var profile in profiles){
-        profile = profiles[profile];
-        console.log(profile);
-        $('td#player'+count+'profile').addClass(profile.key);
-        $('td#player'+count+'profile').append("<img src='"+profile.gravatar+"' style='float:left;'/>");
-        $('td#player'+count+'profile').append("<div class='info'><div>"+profile.name+"</div><div class='stars'><span class='yellowstars'></span><span class='graystars'></span></div></div>");
-        count += 1;
-    }
+function joinGame(){
+    $.getJSON('join', function(data) {
+        if (data.status == 'success'){
+            location.reload();
+        } else {
+            alert(data.error);
+        }
+    });
+}
 
-    $('#chatwindow').attr('scrollTop',$('#chatwindow').attr('scrollHeight') );
-    $('#chatwindow').height( $('#chatwindow').height() +  $('table#board').height() - $('table#sidepanel').height());
-});
+function startGame(){
+    $.getJSON('start', function(data) {
+        if (data.status == 'success'){
+            location.reload();
+        } else {
+            alert(data.error);
+        }
+    });
+}
 
 function chat(){
     $.get("chat", { message: $('#chattext').val() } );
@@ -39,6 +34,12 @@ function openChannel(token){
         if (data.chat){
             $('#chatwindow').append('\n' + data.chat); 
             $('#chatwindow').attr('scrollTop',$('#chatwindow').attr('scrollHeight') );
+        } else if (data.playerlist) {
+            playerlist = $('#playerlist');
+            playerlist.html('')
+            for (player in data.playerlist){
+                playerlist.append('<li>'+data.playerlist[player]+'</li>'); 
+            }
         } else {
             updateTiles(); 
         } 
@@ -84,8 +85,8 @@ function makeDroppable(){
 
 function buildBoard(player){
     var table = $('#board');
-
-    if (player == "player1"){
+    // player0 is an observer
+    if (player == "player1" || player == "player0"){
         for (var r = 1; r <= 22; r++) {
             var tr = $('<tr></tr>');
             for (var c = 1; c <= 22; c++) {
@@ -174,10 +175,18 @@ function updateTiles(){
             if (data.youwin == '1'){
                 alert('You win!');
             } else {
-                alert('You lose! ' + data.winner + ' won!');
+                if (data.outoftiles == '1'){
+                    alert('You lose! Ran out of tiles');
+                } else {
+                    alert('You lose! ' + data.winner + ' won!');
+                }
             }
             gamestatus = 'over';
         }
+
+        pottile = "<div style='width:3px;height:3px;margin:1px;background-color:green;display:inline;'></div>";
+        $('#tilesleft').html(Array(data.tilesleft).join(pottile));
+
         if (data.myturn == '1'){
             $('#actions').show();
         } else {

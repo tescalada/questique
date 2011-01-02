@@ -40,6 +40,7 @@ class Game(db.Model):
     players = db.IntegerProperty()
     status = db.StringProperty()
     playerlist = db.StringListProperty()
+    watcherlist = db.StringListProperty()
     playerhands = GenericListProperty()
     chat = db.TextProperty()
     lastword = db.ListProperty(db.Key)
@@ -113,6 +114,12 @@ class Game(db.Model):
             user = users.get_current_user()
             if len(self.playerlist) < 4 and user.email() not in self.playerlist:
                 self.playerlist.append(user.email())
+
+    def watch(self):
+        ''' add the requesting user to the game watch list '''
+        user = users.get_current_user()
+        if user.email() not in self.playerlist:
+            self.watcherlist.append(user.email())
 
     def nextturn(self):
         ''' continue play to the next player '''

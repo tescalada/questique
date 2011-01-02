@@ -55,6 +55,9 @@ def sendMessage(game,message):
     jsonmessage = simplejson.dumps(message)
     for player in game.playerlist:
         channel.send_message(player + str(game.key()), jsonmessage)
+    for watcher in game.watcherlist:
+        channel.send_message(watcher + str(game.key()), jsonmessage)
+
 
 class MainHandler(webapp.RequestHandler):
     def get(self):
@@ -74,7 +77,7 @@ class ApiHandler(webapp.RequestHandler):
         gameid = cgi.escape(self.request.get('game'))
         game = Game.get(id)
         out = dict()
-        actions = ['placetile','submittiles','tiles','dumptiles','chat','start','join']
+        actions = ['placetile','submittiles','tiles','dumptiles','chat','start','join','watch']
         if action in actions:
             f = getattr(self, 'do_' + action)
             out = f(game)
@@ -129,6 +132,12 @@ class ApiHandler(webapp.RequestHandler):
                         out['youwin'] = 1
 
         out['scores'] = scores
+
+        if game.gametiles.count() >= 150:
+            out['gameover'] = 1
+            out['outoftiles'] = 1
+
+        out['tilesleft'] = len(game.tiles)
 
         out['challengable'] = []
         for id in game.lastword:
@@ -257,10 +266,26 @@ class ApiHandler(webapp.RequestHandler):
         out = dict()
         if users.get_current_user().email() in game.playerlist:
             return self.fail('You are already in this game')
+
         game.join()
         game.save()
+        playerlist = [Player.get_by_email(email).name for email in game.playerlist]
+        sendMessage(game, dict(playerlist=playerlist))
         out['status'] = 'success'
         return out
+
+    def do_watch(self,game):
+        ''' watch the game '''
+        out = dict()
+        if users.get_current_user().email() in game.watcherlist:
+            return self.fail('You are already watching this game')
+
+        game.watch()
+        game.save()
+        playerlist = [Player.get_by_email(email).name for email in game.playerlist]
+        out['status'] = 'success'
+        return out
+
 
     def do_dumptiles(self,game):
         ''' swaps your hand for a new one '''
@@ -301,17 +326,23 @@ class GameHandler(webapp.RequestHandler):
                 #profile['hash'] = 'p%s' % hash(player)
                 profiles.append(profile)
 
-            cut = int(game.myPosition()[-1]) - 1
-            profiles = profiles[cut:] + profiles[:cut]
+            myposition = game.myPosition()
+            if myposition:
+                cut = int(myposition[-1]) - 1
+                profiles = profiles[cut:] + profiles[:cut]
+            else:
+                game.watch()
+                game.save()
+                myposition = 'player0'
 
             jsonprofiles = simplejson.dumps(profiles)
 
 
             template_values = {
                 'tiles': game.myHand(),
-                'player': game.myPosition(),
+                'player': myposition,
                 'playercount': game.players,
-                'position': game.myPosition()[-1],
+                'position': myposition[-1],
                 'players': game.playerlist,
                 'profiles': jsonprofiles,
                 'chat': game.chat,
@@ -321,6 +352,7 @@ class GameHandler(webapp.RequestHandler):
         elif game.status == 'waiting':
             template_values = {
                 'players': [Player.get_by_email(email).name for email in game.playerlist],
+                'token': channel.create_channel(users.get_current_user().email() + str(game.key())),
             }
 
             if users.get_current_user().email() not in game.playerlist:

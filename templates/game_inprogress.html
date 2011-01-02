@@ -9,9 +9,33 @@
     </script>
     <script language="javascript" src="/static/javascript.js"></script>
     <script language="javascript">
-        $(document).ready(function() {
-            openChannel('{{token}}');
-        });
+$(document).ready(function() {
+    buildBoard(player);
+    updateTiles();
+    setInterval ( "updateTiles()", 60000 );
+    $( ".hand_tile" ).draggable({ revert: "invalid"});
+    makeDroppable();
+    //$( "#hand" ).sortable({
+    //    revert: false,
+    //    axis: 'x'
+    //});
+    $(".board_tile").disableSelection();
+
+    var count = 1;
+    for (var profile in profiles){
+        profile = profiles[profile];
+        console.log(profile);
+        $('td#player'+count+'profile').addClass(profile.key);
+        $('td#player'+count+'profile').append("<img src='"+profile.gravatar+"' style='float:left;'/>");
+        $('td#player'+count+'profile').append("<div class='info'><div>"+profile.name+"</div><div class='stars'><span class='yellowstars'></span><span class='graystars'></span></div></div>");
+        count += 1;
+    }
+
+    $('#chatwindow').attr('scrollTop',$('#chatwindow').attr('scrollHeight') );
+    $('#chatwindow').height( $('#chatwindow').height() +  $('table#board').height() - $('table#sidepanel').height());
+    openChannel('{{token}}');
+});
+
     </script>
 {% endblock %}
 {% block content %}
@@ -44,7 +68,11 @@
                 </div>
             </td>
         </tr>
-
+        <tr>
+            <td colspan='2' id='tilesleft'>
+            </td>
+        </tr>
+        {% ifnotequal player 'player0' %}
         <tr>
             <td colspan='2'>
 
@@ -66,5 +94,6 @@
                 </span>
             </td>
         </tr>
+        {% endifnotequal %}
     </table>
 {% endblock %}
