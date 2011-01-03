@@ -10,7 +10,8 @@ function joinGame(){
 }
 
 function startGame(){
-    $.getJSON('start', function(data) {
+    observer = $('#observer option:selected').val();
+    $.getJSON('start', {'observer': observer } ,function(data) {
         if (data.status == 'success'){
             location.reload();
         } else {
@@ -32,8 +33,7 @@ function openChannel(token){
     socket.onmessage = function(message){ 
     var data = JSON.parse(message.data);
         if (data.chat){
-            $('#chatwindow').append('\n' + data.chat); 
-            $('#chatwindow').attr('scrollTop',$('#chatwindow').attr('scrollHeight') );
+            say(data.chat); 
         } else if (data.playerlist) {
             playerlist = $('#playerlist');
             playerlist.html('')
@@ -46,6 +46,25 @@ function openChannel(token){
     };
     socket.onerror = function(){ location.reload(); };
     socket.onclose = function(){ location.reload(); };
+}
+
+function pause(seconds) {
+    var date = new Date();
+    var curDate = null;
+    var millis = seconds * 1000;
+    do { curDate = new Date(); } 
+    while(curDate-date < millis);
+} 
+
+function say(chat){
+    $('#chatwindow').append('\n' + chat); 
+    $('#chatwindow').attr('scrollTop',$('#chatwindow').attr('scrollHeight') );
+}
+
+function tutorial(){
+    say('Hello, and welcome to the questique tutorial');
+    pause(5);
+    say('Hello, and welcome to the questique tutorial');
 }
 
 
@@ -184,7 +203,7 @@ function updateTiles(){
             gamestatus = 'over';
         }
 
-        pottile = "<div style='width:3px;height:3px;margin:1px;background-color:green;display:inline;'></div>";
+        pottile = "<div style='width:3px;height:3px;margin:1px;background-color:green;display:inline;'><span class='container'></span></div>";
         $('#tilesleft').html(Array(data.tilesleft).join(pottile));
 
         if (data.myturn == '1'){

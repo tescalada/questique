@@ -44,6 +44,7 @@ class Game(db.Model):
     playerhands = GenericListProperty()
     chat = db.TextProperty()
     lastword = db.ListProperty(db.Key)
+    observer = db.StringProperty()
 
     def getPlayerByEmail(self,email):
         ''' turns an email into a user object '''

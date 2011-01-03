@@ -55,6 +55,10 @@ def sendMessage(game,message):
     jsonmessage = simplejson.dumps(message)
     for player in game.playerlist:
         channel.send_message(player + str(game.key()), jsonmessage)
+
+    if 'chat' in message and game.observer != 'chat':
+        return
+
     for watcher in game.watcherlist:
         channel.send_message(watcher + str(game.key()), jsonmessage)
 
@@ -62,7 +66,7 @@ def sendMessage(game,message):
 class MainHandler(webapp.RequestHandler):
     def get(self):
         template_values = {
-            'watchgames': Game.all().filter('status =', 'inprogress'),
+            'watchgames': Game.all().filter('status =','inprogress').filter('observer !=','none'),
             'playgames': Game.all().filter('status =', 'waiting'),
         }
 
@@ -76,8 +80,10 @@ class ApiHandler(webapp.RequestHandler):
         self.response.headers['Content-Type'] = 'application/json'
         gameid = cgi.escape(self.request.get('game'))
         game = Game.get(id)
+        if not game:
+            return self.redirect("/")
         out = dict()
-        actions = ['placetile','submittiles','tiles','dumptiles','chat','start','join','watch']
+        actions = ['placetile','submittiles','tiles','dumptiles','chat','start','join']
         if action in actions:
             f = getattr(self, 'do_' + action)
             out = f(game)
@@ -90,6 +96,10 @@ class ApiHandler(webapp.RequestHandler):
 
     def do_chat(self, game):
         '''testing chat'''
+
+        if Player.get_current_player().game.observer != 'none':
+            return self.fail('You can not chat')
+
         name = Player.get_current_player().name
 
         message = cgi.escape(self.request.get('message'))
@@ -127,6 +137,7 @@ class ApiHandler(webapp.RequestHandler):
             scores[str(player.key())] = score
             if (len(game.playerlist) > 1 and score >= 4) or score == 16:
                     out['gameover'] = 1
+                    game.status = 'over'
                     out['winner'] = player.name
                     if player.key() == Player.get_current_player().key():
                         out['youwin'] = 1
@@ -135,6 +146,7 @@ class ApiHandler(webapp.RequestHandler):
 
         if game.gametiles.count() >= 150:
             out['gameover'] = 1
+            game.status = 'over'
             out['outoftiles'] = 1
 
         out['tilesleft'] = len(game.tiles)
@@ -254,6 +266,11 @@ class ApiHandler(webapp.RequestHandler):
     def do_start(self,game):
         ''' starts the game '''
         out = dict()
+        observer = cgi.escape(self.request.get('observer'))
+        webapp.Error(observer)
+        game.observer = 'none'
+        if observer in ['watch','chat']:
+            game.observer = observer
         if users.get_current_user().email() != game.playerlist[0]:
             return self.fail('Only the creator may start the game')
         game.start()
@@ -273,19 +290,6 @@ class ApiHandler(webapp.RequestHandler):
         sendMessage(game, dict(playerlist=playerlist))
         out['status'] = 'success'
         return out
-
-    def do_watch(self,game):
-        ''' watch the game '''
-        out = dict()
-        if users.get_current_user().email() in game.watcherlist:
-            return self.fail('You are already watching this game')
-
-        game.watch()
-        game.save()
-        playerlist = [Player.get_by_email(email).name for email in game.playerlist]
-        out['status'] = 'success'
-        return out
-
 
     def do_dumptiles(self,game):
         ''' swaps your hand for a new one '''
@@ -312,7 +316,8 @@ class GameHandler(webapp.RequestHandler):
     @player_required
     def get(self,id):
         game = Game.get(id)
-
+        if not game:
+            return self.redirect("/")
         #default = "http://www.example.com/default.jpg"
         #size = 100
         profiles = []
@@ -331,9 +336,12 @@ class GameHandler(webapp.RequestHandler):
                 cut = int(myposition[-1]) - 1
                 profiles = profiles[cut:] + profiles[:cut]
             else:
-                game.watch()
-                game.save()
-                myposition = 'player0'
+                if game.observer != 'none':
+                    game.watch()
+                    game.save()
+                    myposition = 'player0'
+                else:
+                    return self.redirect("/")
 
             jsonprofiles = simplejson.dumps(profiles)
 

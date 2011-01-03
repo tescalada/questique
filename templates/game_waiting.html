@@ -26,13 +26,13 @@
 
     {% if startlink %}
         Observers can
-        <select type='checkbox' name='observers' id='#observers'>      
+        <select type='checkbox' name='observer' id='observer'>      
             <option value='none'>not watch</option>
             <option value='watch'>watch</option>
             <option value='chat'>chat and watch</option>
         </select>      
         game<br/><br/>
-        <input type='button' onclick='startGame();' value='start'>
+        <input type='button' onclick='startGame();' value='start'/>
     {% endif %}
 
 {% endblock %}

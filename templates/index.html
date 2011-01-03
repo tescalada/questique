@@ -30,14 +30,14 @@
 </div>
 <div style='float:left;'>
 <h2>Games:</h2>
-<h2>Play:</h2>
+<h3>Play:</h3>
     <ul>
         <li><a href="new">create a new game</a></li>
         {% for game in playgames %}
         <li><a href='/game/{{game.key}}/'>join game</a> ({{game.playerlist|length}}/4 players)</li>
         {% endfor %}
     </ul>
-<h2>Watch:</h2>
+<h3>Watch:</h3>
     <ul>
         {% for game in watchgames %}
         <li><a href='/game/{{game.key}}/'>watch game</a> ({{game.playerlist|length}}/4 players)</li>
