@@ -372,6 +372,7 @@ class GameHandler(webapp.RequestHandler):
                 }
         elif game.status == 'waiting':
             template_values = {
+                'owner': Player.get_by_email(game.playerlist[0]).name,
                 'players': [Player.get_by_email(email).name for email in game.playerlist],
                 'token': channel.create_channel(users.get_current_user().email() + str(game.key())),
             }

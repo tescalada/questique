@@ -96,11 +96,13 @@ class Game(db.Model):
             for t in range(tilecounts[key]):
                 tiles.append(key)
         shuffle(tiles)
+        useremail = users.get_current_user().email()
+        name = Player.get_by_email(useremail).name
         return cls(tiles=tiles,
-                   playerlist=[users.get_current_user().email()],
+                   playerlist=[useremail],
                    playerhands=[],
                    status='waiting',
-                   name='Untitled')
+                   name="%s's game" % name)
 
     def start(self):
         ''' starts the game, goes from waiting to inprogress '''
