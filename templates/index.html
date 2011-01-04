@@ -30,6 +30,15 @@
 </div>
 <div style='float:left;'>
 <h2>Games:</h2>
+{% if mygames %}
+<h3>My Games:</h3>
+    <ul>
+        {% for game in mygames %}
+        <li><a href='/game/{{game.key}}/'>play game</a> ({{game.status}})</li>
+        {% endfor %}
+    </ul>
+
+{% endif %}
 <h3>Play:</h3>
     <ul>
         <li><a href="new">create a new game</a></li>

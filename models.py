@@ -5,7 +5,7 @@ from random import shuffle
 import pickle # is simplejson faster?
 import datetime
 import time
-
+import logging
 
 
 tilecounts = {  'A':15, 'B': 4, 'C': 3,
@@ -120,7 +120,8 @@ class Game(db.Model):
         ''' add the requesting user to the game watch list '''
         user = users.get_current_user()
         if user.email() not in self.playerlist:
-            self.watcherlist.append(user.email())
+            if user.email() not in self.watcherlist:
+                self.watcherlist.append(user.email())
 
     def nextturn(self):
         ''' continue play to the next player '''
@@ -146,11 +147,12 @@ class Player(db.Expando):
     @classmethod
     def get_by_email(cls,email):
         ''' class method to get a player by email '''
+        logging.debug(email)
         return cls.all().filter('user =', users.User(email)).get()
 
     @classmethod
     def get_current_player(cls):
-        ''' class method to get the current player '''
+        ''' class method to get the current logged in player '''
         return cls.all().filter('user =', users.get_current_user()).get()
 
 

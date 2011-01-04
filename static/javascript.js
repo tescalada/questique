@@ -21,8 +21,13 @@ function startGame(){
 }
 
 function chat(){
-    $.get("chat", { message: $('#chattext').val() } );
-    $('#chattext').val('');
+    $.getJSON("chat", { message: $('#chattext').val() }, function(data){
+         if (data.status == 'success'){
+            $('#chattext').val('');
+        } else {
+            alert(data.error);
+        }
+    });
     return false;
 }
 

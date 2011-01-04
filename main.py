@@ -65,7 +65,16 @@ def sendMessage(game,message):
 
 class MainHandler(webapp.RequestHandler):
     def get(self):
+        user = users.get_current_user()
+        mygames = []
+        if user:
+            games = Game.all().filter('status !=','over')
+            for game in games:
+                if user.email() in game.playerlist:
+                    mygames.append(game)
+
         template_values = {
+            'mygames': mygames,
             'watchgames': Game.all().filter('status =','inprogress').filter('observer !=','none'),
             'playgames': Game.all().filter('status =', 'waiting'),
         }
@@ -97,8 +106,8 @@ class ApiHandler(webapp.RequestHandler):
     def do_chat(self, game):
         '''testing chat'''
 
-        if Player.get_current_player().game.observer != 'none':
-            return self.fail('You can not chat')
+        if (Player.get_current_player().user.email() not in game.playerlist) and game.observer != 'chat':
+            return self.fail('Observers can not chat')
 
         name = Player.get_current_player().name
 
@@ -107,6 +116,7 @@ class ApiHandler(webapp.RequestHandler):
         game.chat += '\n' + chat
         game.save()
         sendMessage(game, dict(chat=chat))
+        return dict(status='success')
 
     def do_tiles(self, game):
         '''gets the list of tiles played and player scores '''
@@ -126,8 +136,9 @@ class ApiHandler(webapp.RequestHandler):
         out['tiles'] = []
         for tile in tiles:
             t = dict(cell='%s-%s' % (tile.col,tile.row),
-                value=tile.value,player=str(tile.player.key()),
-                playerposition=tile.position)
+                     value=tile.value,
+                     player=str(tile.player.key()),
+                     playerposition=tile.position)
             out['tiles'].append(t)
 
         scores = dict()
@@ -322,24 +333,25 @@ class GameHandler(webapp.RequestHandler):
         #size = 100
         profiles = []
         SIMPLE_TYPES = (int, long, float, bool, dict, basestring, list)
+        chat = 'chat is disabled'
 
         if game.status == 'inprogress':
             for email in game.playerlist:
                 profile = Player.get_by_email(email).to_dict()
-                #profile['gravatar'] = "http://www.gravatar.com/avatar/%s?%s" % (hashlib.md5(player.lower()).hexdigest(),urllib.urlencode({'d':default,'s':str(size)})) 
-                #profile['name'] = game.getPlayerByEmail(player).nickname().split('@')[0]
-                #profile['hash'] = 'p%s' % hash(player)
                 profiles.append(profile)
 
             myposition = game.myPosition()
             if myposition:
                 cut = int(myposition[-1]) - 1
                 profiles = profiles[cut:] + profiles[:cut]
+                chat = game.chat
             else:
                 if game.observer != 'none':
                     game.watch()
                     game.save()
                     myposition = 'player0'
+                    if game.observer == 'chat':
+                        chat = game.chat
                 else:
                     return self.redirect("/")
 
@@ -353,7 +365,7 @@ class GameHandler(webapp.RequestHandler):
                 'position': myposition[-1],
                 'players': game.playerlist,
                 'profiles': jsonprofiles,
-                'chat': game.chat,
+                'chat': chat,
                 'logout' : users.create_logout_url("/"),
                 'token': channel.create_channel(users.get_current_user().email() + str(game.key())),
                 }
