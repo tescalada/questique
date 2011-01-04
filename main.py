@@ -278,7 +278,7 @@ class ApiHandler(webapp.RequestHandler):
         ''' starts the game '''
         out = dict()
         observer = cgi.escape(self.request.get('observer'))
-        webapp.Error(observer)
+        game.name = cgi.escape(self.request.get('name'))
         game.observer = 'none'
         if observer in ['watch','chat']:
             game.observer = observer
@@ -368,6 +368,7 @@ class GameHandler(webapp.RequestHandler):
                 'chat': chat,
                 'logout' : users.create_logout_url("/"),
                 'token': channel.create_channel(users.get_current_user().email() + str(game.key())),
+                'title': game.name or 'game',
                 }
         elif game.status == 'waiting':
             template_values = {

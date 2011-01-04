@@ -1,6 +1,6 @@
 <html>
     <head>
-        <title>Questique Online</title>
+        <title>Questique Online{% if title %} - {{title}} {% endif%}</title>
         <link href="/static/style.css" rel="stylesheet" type="text/css">
         {% block css %}{% endblock %}
 

@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
+<div id='content'>
 <h1 style='text-align:center;'>Questique Online</h1>
     <p>Questique is a strategy crossword game for 1-4 players. 
     You take your turn by placing letter tiles on the board to form words either left-to-right or up-to-down, building off of your previous tiles (like in Scrabble). 
@@ -34,7 +35,7 @@
 <h3>My Games:</h3>
     <ul>
         {% for game in mygames %}
-        <li><a href='/game/{{game.key}}/'>play game</a> ({{game.status}})</li>
+        <li><a href='/game/{{game.key}}/'>play game</a> ({{game.name}} - {{game.status}})</li>
         {% endfor %}
     </ul>
 
@@ -43,17 +44,18 @@
     <ul>
         <li><a href="new">create a new game</a></li>
         {% for game in playgames %}
-        <li><a href='/game/{{game.key}}/'>join game</a> ({{game.playerlist|length}}/4 players)</li>
+        <li><a href='/game/{{game.key}}/'>join game</a> ({{game.name}} - {{game.playerlist|length}}/4 players)</li>
         {% endfor %}
     </ul>
 <h3>Watch:</h3>
     <ul>
         {% for game in watchgames %}
-        <li><a href='/game/{{game.key}}/'>watch game</a> ({{game.playerlist|length}}/4 players)</li>
+        <li><a href='/game/{{game.key}}/'>watch game</a> ({{game.name}} - {{game.playerlist|length}}/4 players)</li>
         {% endfor %}
     </ul>
 
 </div>
 <br style='clear:both'/>
 <p>DISCLAIMER: I am not the creator of this game. It was a board game made in England which seems to no longer exist. I built this online version because I liked the game and wanted to play it. It is as close to the original as I could make from memory. If you are the creator of this game please contact me.</p>
+</div>
 {% endblock %}

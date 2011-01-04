@@ -11,7 +11,8 @@ function joinGame(){
 
 function startGame(){
     observer = $('#observer option:selected').val();
-    $.getJSON('start', {'observer': observer } ,function(data) {
+    name = $('#name').val();
+    $.getJSON('start', {'observer': observer, 'name':name } ,function(data) {
         if (data.status == 'success'){
             location.reload();
         } else {
@@ -142,7 +143,7 @@ function buildBoard(player){
             }
             table.append(tr);
         }
-    } 
+    }
 }
 
 

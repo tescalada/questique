@@ -45,6 +45,7 @@ class Game(db.Model):
     chat = db.TextProperty()
     lastword = db.ListProperty(db.Key)
     observer = db.StringProperty()
+    name = db.StringProperty()
 
     def getPlayerByEmail(self,email):
         ''' turns an email into a user object '''
@@ -95,7 +96,11 @@ class Game(db.Model):
             for t in range(tilecounts[key]):
                 tiles.append(key)
         shuffle(tiles)
-        return cls(tiles=tiles, playerlist=[users.get_current_user().email()], playerhands=[], status='waiting')
+        return cls(tiles=tiles,
+                   playerlist=[users.get_current_user().email()],
+                   playerhands=[],
+                   status='waiting',
+                   name='Untitled')
 
     def start(self):
         ''' starts the game, goes from waiting to inprogress '''
